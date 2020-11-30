@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     
     <title>
+        how-to-build-a-proxy-by-CFWorkers |
         
         T&amp;G
     </title>
@@ -44,7 +45,7 @@
         <ul class="menu-list">
             
                 <li class="menu-item">
-                    <a class="active"
+                    <a class=""
                        href="/"
                     >
                         HOME
@@ -78,7 +79,7 @@
         <ul class="drawer-menu-list">
             
                 <li class="drawer-menu-item">
-                    <a class="active"
+                    <a class=""
                        href="/">HOME</a>
                 </li>
             
@@ -107,77 +108,120 @@
                 <main class="main-content normal-code-theme">
 
                     
-                        <div class="home-content-container fade-in-down-animation">
-    <ul class="home-article-list">
+                        <div class="fade-in-down-animation">
+    <div class="article-content-container">
+
+        <div class="article-title">
+            <span class="title-hover-animation">how-to-build-a-proxy-by-CFWorkers</span>
+        </div>
+
         
-            <li class="home-article-item">
-
-                
-
-                <h3 class="home-article-title">
-                    <a href="/how-to-build-a-proxy-by-CFWorkers/">
-                        how-to-build-a-proxy-by-CFWorkers
-                    </a>
-                </h3>
-
-                <div class="home-article-content markdown-body">
-                    
-                        背景Cloudflare是著名的
-
-                    
+            <div class="article-header">
+                <div class="avatar">
+                    <img src="/images/avatar.png">
                 </div>
-
-                <div class="home-article-meta-info-container">
-                    <div class="home-article-meta-info">
-                        <span><i class="fa fa-pencil-square-o"></i> 2020-11-22</span>
-                        
-                            
-                            
-                        
+                <div class="info">
+                    <div class="author">
+                        <span>T</span>
+                        <span class="level">Lv1</span>
                     </div>
-                    
-                    <a href="/how-to-build-a-proxy-by-CFWorkers/">Read more <i class="fa fa-angle-right"></i></a>
-                </div>
-            </li>
-        
-            <li class="home-article-item">
-
-                
-
-                <h3 class="home-article-title">
-                    <a href="/hello-world/">
-                        Hello World
-                    </a>
-                </h3>
-
-                <div class="home-article-content markdown-body">
-                    
-                        Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting...
-                    
-                </div>
-
-                <div class="home-article-meta-info-container">
-                    <div class="home-article-meta-info">
-                        <span><i class="fa fa-pencil-square-o"></i> 2020-11-17</span>
-                        
-                            
-                            
-                        
-                    </div>
-                    
-                    <a href="/hello-world/">Read more <i class="fa fa-angle-right"></i></a>
-                </div>
-            </li>
-        
-    </ul>
-
-    <div class="home-paginator">
-        <div class="paginator">
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa fa-calendar-o"></i> 2020-11-22 23:42:41
+    </span>
     
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        <div class="article-content markdown-body">
+            <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>Cloudflare是著名的</p>
+
+        </div>
+
+        
+            <div class="article-nav">
+                
+                
+                    <div class="article-next">
+                        <a class="next btn"
+                           rel="next"
+                           href="/hello-world/"
+                        >
+                            <span class="post-nav-title-item">Hello World</span>
+                            <span class="post-nav-item">Next posts</span>
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+        
+            <div class="comment-container">
+                <div class="comments-container">
+    <div id="comment-anchor"></div>
+    
+        
+    <div class="valine-container">
+        <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+        <div id="vcomments"></div>
+        <script>
+            new Valine({
+                el: '#vcomments',
+                appId: '9z5bEVzKj46jstwNI8LxhAU6-MdYXbMMI',
+                appKey: 'iEDztTkcDrO0LsO944uIDrC3',
+                meta: ''.split(','),
+                avatar: 'wavatar',
+                enableQQ: true,
+                placeholder: '我看着你，就如你看着我',
+                lang: 'en'.toLowerCase()
+            });
+
+
+            // Valine 评论列表增加"博主"标识
+            const getValineDomTimer = setInterval(() => {
+                const vcards = document.querySelectorAll('#vcomments .vcards .vcard');
+                if (vcards.length > 0) {
+
+                    let author = 'T';
+                    if (author) {
+                        author = author.toLocaleLowerCase();
+                    }
+
+                    let email = 'gsioeo@gmail.com';
+                    if (email) {
+                        email = email.toLocaleLowerCase();
+                    }
+
+                    for (let vcard of vcards) {
+                        const vnick = vcard.querySelector('.vhead .vnick');
+                        if (vnick.innerHTML.toLocaleLowerCase() === author) {
+                            vcard.classList.add('author');
+                        }
+                    }
+                    clearInterval(getValineDomTimer);
+                } else {
+                    clearInterval(getValineDomTimer);
+                }
+            }, 2000);
+        </script>
+    </div>
+
 
     
 </div>
 
+            </div>
+        
     </div>
 </div>
 
@@ -209,6 +253,10 @@
     <ul class="tools-list">
         
 
+        
+            <li class="go-comment">
+                <i class="fa fa-comment"></i>
+            </li>
         
 
         <!-- TOC aside toggle -->
@@ -255,6 +303,12 @@
     <!-- page aside -->
     <aside class="page-aside">
         
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li></ol>
+    </div>
+</div>
+        
     </aside>
 
 </div>
@@ -277,6 +331,19 @@
 
 
 
+
+
+    
+<script src="/js/left-side-toggle.js"></script>
+
+
+    
+        
+<script src="/js/code-copy.js"></script>
+
+    
+
+    
 
 
 </body>
