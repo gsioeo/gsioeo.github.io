@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    
+    <title>
+        reverse-engineering-Agilent-Mass-Spectrometr-.d-Files-spectrum-analysis-without-MassHunter |
+        
+        XZB
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <link rel="shortcut icon" href="/images/favicon.png">
+    
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script id="hexo-configurations">
+    let ILS = window.ILS || {};
+    let CONFIG = {"hostname":"xzbloggers.cn","root":"/","localsearch":{"enable":false,"trigger":"auto","unescape":false,"preload":false},"toc":{"enable":false,"number":true,"expand_all":true},"back2top":{"enable":true}};
+  </script>
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body>
+<div class="page-container">
+
+    <header class="page-header">
+        <div class="header-progress"></div>
+    </header>
+
+    <main class="page-main">
+
+        <div class="page-main-content">
+
+            <div class="page-main-content-top">
+                <header class="header-wrapper">
+
+    <div class="header-content">
+
+        <a class="logo-title" href="/">
+            XZB
+        </a>
+
+        <ul class="menu-list">
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/"
+                    >
+                        HOME
+                    </a>
+                </li>
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/archives"
+                    >
+                        ARCHIVES
+                    </a>
+                </li>
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/links"
+                    >
+                        LINKS
+                    </a>
+                </li>
+            
+        </ul>
+
+        <div class="menu-bar">
+            <div class="menu-bar-middle"></div>
+        </div>
+    </div>
+
+    <div class="header-drawer">
+        <ul class="drawer-menu-list">
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/">HOME</a>
+                </li>
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/archives">ARCHIVES</a>
+                </li>
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/links">LINKS</a>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+            </div>
+
+            <div class="page-main-content-middle">
+
+                <main class="main-content normal-code-theme">
+
+                    
+                        <div class="fade-in-down-animation">
+    <div class="article-content-container">
+
+        <div class="article-title">
+            <span class="title-hover-animation">reverse-engineering-Agilent-Mass-Spectrometr-.d-Files-spectrum-analysis-without-MassHunter</span>
+        </div>
+
+        
+            <div class="article-header">
+                <div class="avatar">
+                    <img src="/images/avatar.png">
+                </div>
+                <div class="info">
+                    <div class="author">
+                        <span>T</span>
+                        <span class="level">Lv1</span>
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa fa-calendar-o"></i> 2026-08-03 05:23:46
+    </span>
+    
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        <div class="article-content markdown-body">
+            <h1 id="逆向解析安捷伦质谱-d-格式：无需-MassHunter-也能解谱"><a href="#逆向解析安捷伦质谱-d-格式：无需-MassHunter-也能解谱" class="headerlink" title="逆向解析安捷伦质谱 .d 格式：无需 MassHunter 也能解谱"></a>逆向解析安捷伦质谱 .d 格式：无需 MassHunter 也能解谱</h1><hr>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>本文记录了对安捷伦 GC-MS <code>.d</code> 数据格式的逆向工程过程。该格式以未公开的二进制结构存放质谱数据，官方仅提供 Windows 专属的读取方案。我们利用安捷伦随数据附带的 XML Schema 定义文件（<code>.xsd</code>）作为突破口，成功还原了 <code>MSScan.bin</code> 与 <code>MSPeak.bin</code> 的完整二进制布局，并通过物理不变量（TIC ≡ Σ intensity）在 57,416 次扫描上实现了零误差的形式化验证。</p>
+<p>解析器源码开放于 <a target="_blank" rel="noopener" href="https://github.com/gsioeo/agilent-d-toolkit">agilent-d-toolkit</a>。</p>
+<hr>
+<h2 id="1-问题背景"><a href="#1-问题背景" class="headerlink" title="1. 问题背景"></a>1. 问题背景</h2><p>借用外部 GC-MS 仪器完成样品采集后，收到 9 个安捷伦 <code>.d</code> 目录（共约 240 MiB）的原始数据。本地为 Arch Linux 环境，无 MassHunter 许可证，目标是<strong>不依赖任何厂商软件</strong>，直接解析二进制数据并建立可复用的自动化处理管线。</p>
+<p>在 Claude Opus 5 辅助下，历经约 6 小时完成以下产出：</p>
+<ul>
+<li>二进制 <code>.d</code> 格式解析器（纯 Python）</li>
+<li>bit-for-bit 无损 mzML 格式转换器</li>
+<li>EIC 提取工具</li>
+<li>自动生成科学制图的脚本</li>
+</ul>
+<p>核心数据文件结构如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;run&gt;.d/AcqData/</span><br><span class="line">  MSScan.bin   1.1 MiB   每个扫描对应一条定长记录</span><br><span class="line">  MSPeak.bin    26 MiB   实际的质谱质心数据</span><br></pre></td></tr></table></figure>
+
+<h3 id="现有方案及其局限"><a href="#现有方案及其局限" class="headerlink" title="现有方案及其局限"></a>现有方案及其局限</h3><p>安捷伦官方提供三种读取路径：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>局限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MassHunter GUI</td>
+<td>需 Windows + 许可证</td>
+</tr>
+<tr>
+<td>.NET 数据访问 DLL</td>
+<td>仅限 Windows，需厂家 SDK</td>
+</tr>
+<tr>
+<td>COM 桥接组件</td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<p>三者均无法在 headless Linux 上实现可复用的数据处理流水线。</p>
+<p>开源社区存在针对各厂商专有格式的读取工具（如 <a target="_blank" rel="noopener" href="https://github.com/BlaisProteomics/multiplierz">multiplierz v2.0</a>，见 Alexander et al., <em>Proteomics</em>, 2017），但其实现原理未充分文档化。相较于引入不透明的第三方依赖，直接研究 <code>.d</code> 底层格式更符合本次需求。</p>
+<hr>
+<h2 id="2-Schema-就在数据文件夹中"><a href="#2-Schema-就在数据文件夹中" class="headerlink" title="2. Schema 就在数据文件夹中"></a>2. Schema 就在数据文件夹中</h2><p>一条 <code>ls</code> 命令即可发现：二进制文件旁存放着 <code>MSScan.xsd</code>（2846 bytes）。</p>
+<p>安捷伦在每针样品的原始数据目录内附带了二进制记录的 <strong>XML Schema 定义</strong>。该 Schema 声明了两个核心类型：</p>
+<ul>
+<li>**<code>ScanRecordType</code>**：包含 <code>ScanID</code>、<code>ScanMethodID</code>、<code>TimeSegmentID</code>、<code>ScanTime</code>、<code>MSLevel</code>、<code>ScanType</code>、<code>TIC</code>、<code>BasePeakMZ</code> 等字段。</li>
+<li>**<code>SpectrumParamsType</code>**：定义 <code>SpectrumOffset</code>、<code>ByteCount</code>、<code>PointCount</code> 及强度/质量比的极值范围。</li>
+</ul>
+<h3 id="记录长度推算"><a href="#记录长度推算" class="headerlink" title="记录长度推算"></a>记录长度推算</h3><p>假设无结构体对齐填充，按字段声明累加字节数：</p>
+<table>
+<thead>
+<tr>
+<th>组成</th>
+<th>计算</th>
+<th>小计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>11 × int32</td>
+<td>11 × 4</td>
+<td>44 bytes</td>
+</tr>
+<tr>
+<td>11 × float64</td>
+<td>11 × 8</td>
+<td>88 bytes</td>
+</tr>
+<tr>
+<td>SpectrumParams</td>
+<td>int32 + int64 + 2×int32 + 4×float64</td>
+<td>52 bytes</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td></td>
+<td><strong>184 bytes</strong></td>
+</tr>
+</tbody></table>
+<h3 id="文件头长度确认"><a href="#文件头长度确认" class="headerlink" title="文件头长度确认"></a>文件头长度确认</h3><p><code>MSScan.bin</code> 大小为 1,153,792 bytes。若每条记录为 184 bytes，文件头大小 <em>H</em> 须满足模同余关系：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1,153,792 mod 184 = 112  ⇒  H ∈ &#123;112, 296, 480, …&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在偏移 <code>0x58</code> 处读到 <code>0x00000128</code> = <strong>296</strong>，代入验证：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(1,153,792 − 296) / 184 = 6269（整除）</span><br></pre></td></tr></table></figure>
+
+<p>同目录 <code>MSTS.xml</code> 中独立声明的 <code>NumOfScans</code> 恰为 6269。三重互证——文件大小模余数、文件头候选值、外部 XML 计数——一致收敛。</p>
+<hr>
+<h2 id="3-解码与形式化验证"><a href="#3-解码与形式化验证" class="headerlink" title="3. 解码与形式化验证"></a>3. 解码与形式化验证</h2><h3 id="字段映射（第一条记录）"><a href="#字段映射（第一条记录）" class="headerlink" title="字段映射（第一条记录）"></a>字段映射（第一条记录）</h3><table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Type</th>
+<th>Field</th>
+<th>解析值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>12</td>
+<td>float64</td>
+<td>ScanTime</td>
+<td>10.003167… min</td>
+<td>扫描保留时间</td>
+</tr>
+<tr>
+<td>28</td>
+<td>float64</td>
+<td>TIC</td>
+<td>172,858.4</td>
+<td>总离子流强度</td>
+</tr>
+<tr>
+<td>100</td>
+<td>float64</td>
+<td>MassRangeMin</td>
+<td>50.0</td>
+<td>最低 <em>m/z</em></td>
+</tr>
+<tr>
+<td>108</td>
+<td>float64</td>
+<td>MassRangeMax</td>
+<td>600.0</td>
+<td>最高 <em>m/z</em></td>
+</tr>
+<tr>
+<td>116</td>
+<td>float64</td>
+<td>Threshold</td>
+<td>100.0</td>
+<td>采集阈值</td>
+</tr>
+<tr>
+<td>136</td>
+<td>int64</td>
+<td>SpectrumOffset</td>
+<td>68</td>
+<td>MSPeak.bin 内偏移</td>
+</tr>
+<tr>
+<td>144</td>
+<td>int32</td>
+<td>ByteCount</td>
+<td>856</td>
+<td>频谱数据字节数</td>
+</tr>
+<tr>
+<td>148</td>
+<td>int32</td>
+<td>PointCount</td>
+<td>107</td>
+<td>质心点数</td>
+</tr>
+</tbody></table>
+<p>对应的 <code>struct</code> 格式串：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">_REC = struct.Struct(<span class="string">&quot;&lt;3i d 2i 3d 4i 7d 2i i q 2i 4d&quot;</span>)</span><br><span class="line"><span class="keyword">assert</span> _REC.size == <span class="number">184</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="核心不变量验证"><a href="#核心不变量验证" class="headerlink" title="核心不变量验证"></a>核心不变量验证</h3><p>TIC 的物理定义是单次扫描内所有质心点强度之和。据此构造恒等式：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mz, intensities = read_spectrum(scan_index)</span><br><span class="line"><span class="keyword">assert</span> <span class="built_in">sum</span>(intensities) == scan_record.tic   <span class="comment"># 浮点精确相等</span></span><br></pre></td></tr></table></figure>
+
+<p>验证结果：<strong>在全部 9 针数据的 56,416 次扫描中，该恒等式无一例外成立，残差为零。</strong></p>
+<hr>
+<h2 id="4-经验总结与适用边界"><a href="#4-经验总结与适用边界" class="headerlink" title="4. 经验总结与适用边界"></a>4. 经验总结与适用边界</h2><h3 id="逆向方法论"><a href="#逆向方法论" class="headerlink" title="逆向方法论"></a>逆向方法论</h3><ol>
+<li><strong>优先寻找 Schema</strong>——厂商常随数据附带结构定义，这是最高效的切入点。</li>
+<li><strong>构造冗余不变量</strong>——利用数据中的物理约束（如 TIC = Σ intensity）进行交叉校验。</li>
+<li><strong>全量校验而非抽样</strong>——逐条验证可暴露偶发的边界情况。</li>
+<li><strong>保留纯 Python 参考实现</strong>——未经 NumPy 向量化的朴素实现是捕获类型提升（如 NEP-50）等隐蔽 Bug 的最佳基准线。</li>
+<li><strong>有足够的 Credit，谁都能成为超级程序员。</strong></li>
+</ol>
+<h3 id="适用边界"><a href="#适用边界" class="headerlink" title="适用边界"></a>适用边界</h3><table>
+<thead>
+<tr>
+<th>已验证</th>
+<th>未覆盖</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MassHunter Acquisition 13.x</td>
+<td>更早/更新版本</td>
+</tr>
+<tr>
+<td>三重四极杆（QqQ）硬件</td>
+<td>TOF、离子阱等</td>
+</tr>
+<tr>
+<td>MS1 全扫描、EI 源、质心模式</td>
+<td>MS/MS、ESI</td>
+</tr>
+<tr>
+<td><code>MSPeak.bin</code>（质心谱）</td>
+<td><code>MSProfile.bin</code>（连续谱）</td>
+</tr>
+<tr>
+<td>单时间段 GC-MS</td>
+<td>LC-MS、多时间段采集</td>
+</tr>
+</tbody></table>
+
+        </div>
+
+        
+            <div class="article-nav">
+                
+                
+                    <div class="article-next">
+                        <a class="next btn"
+                           rel="next"
+                           href="/how-to-build-a-proxy-by-CFWorkers-e21c46bcd5b7/"
+                        >
+                            <span class="post-nav-title-item">how-to-build-a-proxy-by-CFWorkers</span>
+                            <span class="post-nav-item">Next posts</span>
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+        
+            <div class="comment-container">
+                <div class="comments-container">
+    <div id="comment-anchor"></div>
+    
+        
+    <div class="valine-container">
+        <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+        <div id="vcomments"></div>
+        <script>
+            new Valine({
+                el: '#vcomments',
+                appId: '9z5bEVzKj46jstwNI8LxhAU6-MdYXbMMI',
+                appKey: 'iEDztTkcDrO0LsO944uIDrC3',
+                meta: ''.split(','),
+                avatar: 'wavatar',
+                enableQQ: true,
+                placeholder: '我看着你，就如你看着我',
+                lang: 'en'.toLowerCase()
+            });
+
+
+            // Valine 评论列表增加"博主"标识
+            const getValineDomTimer = setInterval(() => {
+                const vcards = document.querySelectorAll('#vcomments .vcards .vcard');
+                if (vcards.length > 0) {
+
+                    let author = 'T';
+                    if (author) {
+                        author = author.toLocaleLowerCase();
+                    }
+
+                    let email = 'gsioeo@gmail.com';
+                    if (email) {
+                        email = email.toLocaleLowerCase();
+                    }
+
+                    for (let vcard of vcards) {
+                        const vnick = vcard.querySelector('.vhead .vnick');
+                        if (vnick.innerHTML.toLocaleLowerCase() === author) {
+                            vcard.classList.add('author');
+                        }
+                    }
+                    clearInterval(getValineDomTimer);
+                } else {
+                    clearInterval(getValineDomTimer);
+                }
+            }, 2000);
+        </script>
+    </div>
+
+
+    
+</div>
+
+            </div>
+        
+    </div>
+</div>
+
+
+                    
+                </main>
+
+            </div>
+
+            <div class="page-main-content-bottom">
+                <footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info info-item">
+            &copy; 2026 <i class="fa fa-heart-o"></i> <a href="/">T</a>
+        </div>
+        
+        <div class="theme-info info-item">
+            Powered by <a target="_blank" href="https://hexo.io">Hexo</a> | Theme <a class="theme-version" target="_blank"></a>
+        </div>
+    </div>
+</footer>
+
+            </div>
+        </div>
+    </main>
+
+    <div class="sidebar-tools">
+        <div class="tools-container">
+    <ul class="tools-list">
+        
+
+        
+            <li class="go-comment">
+                <i class="fa fa-comment"></i>
+            </li>
+        
+
+        <!-- TOC aside toggle -->
+        
+
+    </ul>
+</div>
+
+    </div>
+
+    <div class="sidebar-tools-2">
+        <div class="tools2-container">
+
+    <button class="tools-button">
+        <i class="fa fa-plus"></i>
+    </button>
+
+    <ul class="tools-wrapper">
+        <!-- back2top -->
+        
+            <li class="tools-item scroll-to-bottom">
+                <i class="fa fa-arrow-down"></i>
+            </li>
+            <li class="tools-item scroll-to-top">
+                <i class="fa fa-arrow-up"></i>
+            </li>
+        
+
+        <!-- mode toggle -->
+        <li class="tools-item mode-toggle">
+            <i class="fa fa-moon-o"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+
+    </ul>
+</div>
+
+    </div>
+
+
+    <!-- page aside -->
+    <aside class="page-aside">
+        
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%86%E5%90%91%E8%A7%A3%E6%9E%90%E5%AE%89%E6%8D%B7%E4%BC%A6%E8%B4%A8%E8%B0%B1-d-%E6%A0%BC%E5%BC%8F%EF%BC%9A%E6%97%A0%E9%9C%80-MassHunter-%E4%B9%9F%E8%83%BD%E8%A7%A3%E8%B0%B1"><span class="nav-number">1.</span> <span class="nav-text">逆向解析安捷伦质谱 .d 格式：无需 MassHunter 也能解谱</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="nav-number">1.2.</span> <span class="nav-text">1. 问题背景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%B0%E6%9C%89%E6%96%B9%E6%A1%88%E5%8F%8A%E5%85%B6%E5%B1%80%E9%99%90"><span class="nav-number">1.2.1.</span> <span class="nav-text">现有方案及其局限</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Schema-%E5%B0%B1%E5%9C%A8%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%A4%B9%E4%B8%AD"><span class="nav-number">1.3.</span> <span class="nav-text">2. Schema 就在数据文件夹中</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E9%95%BF%E5%BA%A6%E6%8E%A8%E7%AE%97"><span class="nav-number">1.3.1.</span> <span class="nav-text">记录长度推算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%A4%B4%E9%95%BF%E5%BA%A6%E7%A1%AE%E8%AE%A4"><span class="nav-number">1.3.2.</span> <span class="nav-text">文件头长度确认</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%A7%A3%E7%A0%81%E4%B8%8E%E5%BD%A2%E5%BC%8F%E5%8C%96%E9%AA%8C%E8%AF%81"><span class="nav-number">1.4.</span> <span class="nav-text">3. 解码与形式化验证</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E6%98%A0%E5%B0%84%EF%BC%88%E7%AC%AC%E4%B8%80%E6%9D%A1%E8%AE%B0%E5%BD%95%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">字段映射（第一条记录）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%B8%8D%E5%8F%98%E9%87%8F%E9%AA%8C%E8%AF%81"><span class="nav-number">1.4.2.</span> <span class="nav-text">核心不变量验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93%E4%B8%8E%E9%80%82%E7%94%A8%E8%BE%B9%E7%95%8C"><span class="nav-number">1.5.</span> <span class="nav-text">4. 经验总结与适用边界</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%86%E5%90%91%E6%96%B9%E6%B3%95%E8%AE%BA"><span class="nav-number">1.5.1.</span> <span class="nav-text">逆向方法论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E8%BE%B9%E7%95%8C"><span class="nav-number">1.5.2.</span> <span class="nav-text">适用边界</span></a></li></ol></li></ol></li></ol>
+    </div>
+</div>
+        
+    </aside>
+
+</div>
+
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/header-shrink.js"></script>
+<script src="/js/dark-light-toggle.js"></script>
+<script src="/js/main.js"></script>
+
+
+
+
+
+    
+<script src="/js/back2top.js"></script>
+
+
+
+
+
+    
+<script src="/js/left-side-toggle.js"></script>
+
+
+    
+        
+<script src="/js/code-copy.js"></script>
+
+    
+
+    
+
+
+</body>
+</html>
