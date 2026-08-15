@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    
+    <title>
+        gnu-pdf-trans-pipe |
+        
+        XZB
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <link rel="shortcut icon" href="/images/favicon.png">
+    
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script id="hexo-configurations">
+    let ILS = window.ILS || {};
+    let CONFIG = {"hostname":"xzbloggers.cn","root":"/","localsearch":{"enable":false,"trigger":"auto","unescape":false,"preload":false},"toc":{"enable":false,"number":true,"expand_all":true},"back2top":{"enable":true}};
+  </script>
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body>
+<div class="page-container">
+
+    <header class="page-header">
+        <div class="header-progress"></div>
+    </header>
+
+    <main class="page-main">
+
+        <div class="page-main-content">
+
+            <div class="page-main-content-top">
+                <header class="header-wrapper">
+
+    <div class="header-content">
+
+        <a class="logo-title" href="/">
+            XZB
+        </a>
+
+        <ul class="menu-list">
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/"
+                    >
+                        HOME
+                    </a>
+                </li>
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/archives"
+                    >
+                        ARCHIVES
+                    </a>
+                </li>
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/links"
+                    >
+                        LINKS
+                    </a>
+                </li>
+            
+        </ul>
+
+        <div class="menu-bar">
+            <div class="menu-bar-middle"></div>
+        </div>
+    </div>
+
+    <div class="header-drawer">
+        <ul class="drawer-menu-list">
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/">HOME</a>
+                </li>
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/archives">ARCHIVES</a>
+                </li>
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/links">LINKS</a>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+            </div>
+
+            <div class="page-main-content-middle">
+
+                <main class="main-content normal-code-theme">
+
+                    
+                        <div class="fade-in-down-animation">
+    <div class="article-content-container">
+
+        <div class="article-title">
+            <span class="title-hover-animation">gnu-pdf-trans-pipe</span>
+        </div>
+
+        
+            <div class="article-header">
+                <div class="avatar">
+                    <img src="/images/avatar.png">
+                </div>
+                <div class="info">
+                    <div class="author">
+                        <span>T</span>
+                        <span class="level">Lv1</span>
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa fa-calendar-o"></i> 2026-08-15 06:29:48
+    </span>
+    
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        <div class="article-content markdown-body">
+            <h1 id="硬核终端-PDF-翻译管线：用-Poppler-Translate-Shell-构建符合-Unix-哲学的翻译方案"><a href="#硬核终端-PDF-翻译管线：用-Poppler-Translate-Shell-构建符合-Unix-哲学的翻译方案" class="headerlink" title="硬核终端 PDF 翻译管线：用 Poppler + Translate-Shell 构建符合 Unix 哲学的翻译方案"></a>硬核终端 PDF 翻译管线：用 Poppler + Translate-Shell 构建符合 Unix 哲学的翻译方案</h1><blockquote>
+<p>在 Arch Linux 终端中，不依赖 GUI、不使用多模态大模型、不调用 Ollama，仅凭 GNU/Unix 命令行工具完成整本 PDF 的中文翻译。这是一篇完整的试错与改进记录。</p>
+</blockquote>
+<h2 id="起因：翻译一本-GNU-C-编程教程"><a href="#起因：翻译一本-GNU-C-编程教程" class="headerlink" title="起因：翻译一本 GNU C 编程教程"></a>起因：翻译一本 GNU C 编程教程</h2><p>手头有一本 <code>ctut.pdf</code>——GNU C Programming Tutorial，共 290 页。目标很简单：把它翻译成中文纯文本，方便在终端中阅读。</p>
+<p>要求：</p>
+<ul>
+<li>纯命令行完成，不要 GUI 应用</li>
+<li>不用 Python 应用、不用 Ollama、不用多模态大模型</li>
+<li>保持 GNU 手册的朴素风格，不要”AI 教材腔”</li>
+<li>在 Arch Linux 上用官方仓库的工具完成</li>
+</ul>
+<h2 id="第一阶段：Google-调研"><a href="#第一阶段：Google-调研" class="headerlink" title="第一阶段：Google 调研"></a>第一阶段：Google 调研</h2><p>在 Google 搜索”arch pdf翻译工具”时，AI 模式（Gemini）给出了三种方案：</p>
+<h3 id="方案一：PDFMathTranslate-pdf2zh"><a href="#方案一：PDFMathTranslate-pdf2zh" class="headerlink" title="方案一：PDFMathTranslate (pdf2zh)"></a>方案一：PDFMathTranslate (pdf2zh)</h3><p>现代 AI 排版保留翻译工具，基于 Python，支持 OpenAI、DeepL、Ollama 等：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install pdf2zh</span><br><span class="line">pdf2zh example.pdf</span><br></pre></td></tr></table></figure>
+
+<p>优点是排版保留好、支持公式，但它依赖 Python 和外部 AI API，不符合”纯 GNU 命令行”的要求。</p>
+<h3 id="方案二：Poppler-Translate-Shell（最终选择）"><a href="#方案二：Poppler-Translate-Shell（最终选择）" class="headerlink" title="方案二：Poppler + Translate-Shell（最终选择）"></a>方案二：Poppler + Translate-Shell（最终选择）</h3><p>Arch 官方仓库自带的硬核组合：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo pacman -S poppler translate-shell</span><br><span class="line">pdftotext input.pdf - | trans -b :zh</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>poppler</code> 提供 <code>pdftotext</code>，<code>translate-shell</code> 提供 <code>trans</code> 命令行翻译工具。这是最符合 Unix 哲学的方案——管道组合、文本流式处理。</p>
+<h3 id="方案三：AUR-的-pdf-translator"><a href="#方案三：AUR-的-pdf-translator" class="headerlink" title="方案三：AUR 的 pdf_translator"></a>方案三：AUR 的 pdf_translator</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yay -S pdf_translator</span><br></pre></td></tr></table></figure>
+
+<p>基于 Python 和 translate-shell 的 AUR 小脚本，但维护不活跃。</p>
+<p><strong>最终选择了方案二</strong>，因为它最纯粹。</p>
+<h2 id="第二阶段：初次尝试-pdftotext-直接管道"><a href="#第二阶段：初次尝试-pdftotext-直接管道" class="headerlink" title="第二阶段：初次尝试 pdftotext 直接管道"></a>第二阶段：初次尝试 pdftotext 直接管道</h2><p>Google AI 模式给出了详细的进阶用法：</p>
+<h3 id="基础管道命令"><a href="#基础管道命令" class="headerlink" title="基础管道命令"></a>基础管道命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pdftotext input.pdf - | trans -b :zh</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-</code>：输出到 stdout 而非文件</li>
+<li><code>-b</code>：brief 模式，只输出翻译结果</li>
+<li><code>:zh</code>：目标语言中文</li>
+</ul>
+<h3 id="指定页面范围"><a href="#指定页面范围" class="headerlink" title="指定页面范围"></a>指定页面范围</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 仅翻译第 5 到第 10 页</span></span><br><span class="line">pdftotext -f 5 -l 10 input.pdf - | trans -b :zh</span><br></pre></td></tr></table></figure>
+
+<h3 id="保留段落布局"><a href="#保留段落布局" class="headerlink" title="保留段落布局"></a>保留段落布局</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -layout 保持原稿物理布局，减少断句错误</span></span><br><span class="line">pdftotext -layout input.pdf - | trans -b :zh</span><br></pre></td></tr></table></figure>
+
+<h3 id="导出为文件"><a href="#导出为文件" class="headerlink" title="导出为文件"></a>导出为文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pdftotext -layout input.pdf - | trans -b :zh &gt; translated.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="更换翻译引擎"><a href="#更换翻译引擎" class="headerlink" title="更换翻译引擎"></a>更换翻译引擎</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Bing 翻译</span></span><br><span class="line">pdftotext input.pdf - | trans -e bing -b :zh</span><br><span class="line"></span><br><span class="line"><span class="comment"># DeepL</span></span><br><span class="line">pdftotext input.pdf - | trans -e deepl -b :zh</span><br><span class="line"></span><br><span class="line"><span class="comment"># OpenAI</span></span><br><span class="line">pdftotext input.pdf - | trans -e openai -b :zh</span><br></pre></td></tr></table></figure>
+
+<h3 id="translate-shell-配置文件"><a href="#translate-shell-配置文件" class="headerlink" title="translate-shell 配置文件"></a>translate-shell 配置文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ~/.config/translate-shell/init.trans</span></span><br><span class="line">&#123;</span><br><span class="line">    :default-engine <span class="string">&quot;bing&quot;</span></span><br><span class="line">    :hl <span class="string">&quot;zh&quot;</span></span><br><span class="line">    :tl <span class="string">&quot;zh&quot;</span></span><br><span class="line">    :verbose <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看起来很美好——一行命令搞定翻译。但实际运行时…</p>
+<h2 id="第三阶段：pdftotext-翻车"><a href="#第三阶段：pdftotext-翻车" class="headerlink" title="第三阶段：pdftotext 翻车"></a>第三阶段：pdftotext 翻车</h2><p>对 <code>ctut.pdf</code> 执行 <code>pdftotext</code>，发现提取出来的文本是乱码或空白。这本 PDF 虽然是数字版而非扫描件，但它的文本层编码有问题，<code>pdftotext</code> 无法正常抽取。</p>
+<p>对 <code>ctut.pdf</code> 执行 <code>pdfinfo</code>，发现 ‘Creator:     dvips(k) 5.86 Copyright 1999 Radical Eye Software |\ Producer:     GNU Ghostscript 7.05’，使用了极老旧的 LaTex 工具链生成的 PDF， 没有嵌入 <em><code>ToUnicode</code></em> ，即文档中不包含符号对应的真实字符编码。 </p>
+<p><strong>关键结论：如果 <code>pdftotext</code> 提取不出有效文本，就必须走 OCR（光学字符识别）路线。</strong></p>
+<p>于是思路转变：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pdftotext input.pdf - | trans -b :zh   ← 此路不通</span><br><span class="line"></span><br><span class="line">改为：</span><br><span class="line">PDF 页面 → 渲染为图片 → OCR 识别文字 → 翻译</span><br></pre></td></tr></table></figure>
+
+<p>OCR 测试中出现 <em><code>Syntax Warning: Bad bounding box in Type 3 glyph</code></em> ，该 PDF 采用了极其古老的 Type3 字体（通常是 90 年代 LaTex 编译时未开启矢量字体的结果）。这类字体本质上是一堆低分辨率的位图，因此<code>pdftoppm</code>在栅格化渲染时会报边界框错误。不过图片仍然正常生成，只是一条 Poppler 提示内部参数不规范的警告。</p>
+<h2 id="第四阶段：第一版-OCR-管线脚本-translate-pipe-sh"><a href="#第四阶段：第一版-OCR-管线脚本-translate-pipe-sh" class="headerlink" title="第四阶段：第一版 OCR 管线脚本 (translate_pipe.sh)"></a>第四阶段：第一版 OCR 管线脚本 (translate_pipe.sh)</h2><p>写了第一版脚本，核心思想是 Unix 管线式处理：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line">PDF_FILE=<span class="string">&quot;ctut.pdf&quot;</span></span><br><span class="line">OUTPUT_DIR=<span class="string">&quot;/tmp/ctut_pages&quot;</span></span><br><span class="line">FINAL_DOC=<span class="string">&quot;ctut_translated.txt&quot;</span></span><br><span class="line">START_PAGE=1</span><br><span class="line">END_PAGE=290</span><br><span class="line"></span><br><span class="line">mkdir -p <span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>&quot;</span></span><br><span class="line">rm -f <span class="string">&quot;<span class="variable">$FINAL_DOC</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> $(seq <span class="variable">$START_PAGE</span> <span class="variable">$END_PAGE</span>); <span class="keyword">do</span></span><br><span class="line">    PAGE_PAD=$(<span class="built_in">printf</span> <span class="string">&quot;%03d&quot;</span> <span class="variable">$i</span>)</span><br><span class="line">    IMG_PATH=<span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>/page-<span class="variable">$PAGE_PAD</span>.png&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;--- 正在处理第 <span class="variable">$i</span> 页 ---&quot;</span> | tee -a <span class="string">&quot;<span class="variable">$FINAL_DOC</span>&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 1. PDF 单页渲染为 PNG</span></span><br><span class="line">    pdftoppm -png -f <span class="variable">$i</span> -l <span class="variable">$i</span> -r 200 <span class="string">&quot;<span class="variable">$PDF_FILE</span>&quot;</span> <span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>/page&quot;</span> 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2. OCR → 去空行 → 翻译 → 过滤错误</span></span><br><span class="line">    <span class="keyword">if</span> [ -f <span class="string">&quot;<span class="variable">$IMG_PATH</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">        cat <span class="string">&quot;<span class="variable">$IMG_PATH</span>&quot;</span> | \</span><br><span class="line">            tesseract stdin stdout -l eng 2&gt;/dev/null | \</span><br><span class="line">            grep -v <span class="string">&#x27;^[[:space:]]*$&#x27;</span> | \</span><br><span class="line">            trans -b :zh | \</span><br><span class="line">            grep -v -E <span class="string">&quot;\[ERROR\]|Oops\!&quot;</span> &gt;&gt; <span class="string">&quot;<span class="variable">$FINAL_DOC</span>&quot;</span></span><br><span class="line"></span><br><span class="line">        rm -f <span class="string">&quot;<span class="variable">$IMG_PATH</span>&quot;</span></span><br><span class="line">    <span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">    sleep 2</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<p>运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chmod +x translate_pipe.sh</span><br><span class="line">./translate_pipe.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="第一版暴露的问题"><a href="#第一版暴露的问题" class="headerlink" title="第一版暴露的问题"></a>第一版暴露的问题</h3><p>终端输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#x3D;&#x3D;&#x3D; 开始处理: ctut.pdf (第 1 页 至 第 290 页) &#x3D;&#x3D;&#x3D;</span><br><span class="line">--- 正在处理第 1 页 ---</span><br><span class="line">grep: 警告：stray \ before !</span><br><span class="line">--- 正在处理第 2 页 ---</span><br><span class="line">grep: 警告：stray \ before !</span><br><span class="line">[ERROR] Null response.</span><br><span class="line">[ERROR] Oops! Something went wrong and I can&#39;t translate it for you :(</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题一：grep 警告</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -v -E <span class="string">&quot;\[ERROR\]|Oops\!&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>在 <code>grep -E</code>（ERE）中，<code>!</code> 不需要转义，<code>\!</code> 反而导致 <code>stray \ before !</code> 警告。修复：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -v -E <span class="string">&#x27;\[ERROR\]|Oops!&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>问题二：<code>trans</code> 大量空响应</strong></p>
+<p>整页文本一次性扔给 <code>trans</code>，翻译服务限流返回 <code>Null response</code>。长文本一次翻译极易触发 Google 翻译的 IP 频率限制。</p>
+<p><strong>问题三：无法断点续跑</strong></p>
+<p>每次运行 <code>rm -f &quot;$FINAL_DOC&quot;</code> 删除已有结果。290 页的 PDF，中途失败就前功尽弃。</p>
+<p><strong>问题四：没有文本分块</strong></p>
+<p>代码、URL、C 语言片段被翻译器误改。</p>
+<h2 id="第五阶段：确立-GNU-风格约束"><a href="#第五阶段：确立-GNU-风格约束" class="headerlink" title="第五阶段：确立 GNU 风格约束"></a>第五阶段：确立 GNU 风格约束</h2><p>既然是翻译 GNU 手册，翻译风格必须符合 GNU 语境。整理了规则：</p>
+<ol>
+<li><code>free software</code> → “自由软件”（不是”免费软件”）</li>
+<li><code>GNU Free Documentation License</code> → “GNU 自由文档许可证”</li>
+<li>保留 C 语言关键字、函数名、变量名、命令、文件名、URL</li>
+<li>语气朴素直接，不要”商业教程腔”或”AI 总结腔”</li>
+<li><code>you</code> 翻译为”你”，不要客服腔”您”</li>
+</ol>
+<p>同时明确技术约束：</p>
+<ul>
+<li><strong>只用 <code>trans -b</code>，不用 Ollama，不用本地 LLM</strong></li>
+<li>保持 Bash/GNU 工具/文本流的处理方式</li>
+</ul>
+<h2 id="第六阶段：OCR-first-GNU-trans-版本-v1"><a href="#第六阶段：OCR-first-GNU-trans-版本-v1" class="headerlink" title="第六阶段：OCR-first GNU/trans 版本 (v1)"></a>第六阶段：OCR-first GNU/trans 版本 (v1)</h2><p>重写为 OCR-first 架构：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 核心管线</span></span><br><span class="line">pdftoppm -singlefile -png -r <span class="string">&quot;<span class="variable">$DPI</span>&quot;</span> -f <span class="string">&quot;<span class="variable">$p</span>&quot;</span> -l <span class="string">&quot;<span class="variable">$p</span>&quot;</span> <span class="string">&quot;<span class="variable">$PDF_FILE</span>&quot;</span> <span class="string">&quot;<span class="variable">$prefix</span>&quot;</span></span><br><span class="line">tesseract <span class="string">&quot;<span class="variable">$img</span>&quot;</span> <span class="string">&quot;<span class="variable">$ocr_base</span>&quot;</span> -l eng --psm <span class="string">&quot;<span class="variable">$PSM</span>&quot;</span></span><br><span class="line"><span class="comment"># 英文清洗 → 分块 → trans -b → GNU 术语后处理 → 缓存</span></span><br></pre></td></tr></table></figure>
+
+<p>新增特性：</p>
+<ul>
+<li>默认 OCR-first（<code>EXTRACTOR=ocr</code>）</li>
+<li><code>trans -b en:zh-CN</code> 作为翻译器</li>
+<li>支持翻译引擎选择（<code>ENGINE=bing</code>）</li>
+<li>DPI 和 PSM 可配置</li>
+<li>文本分块（<code>MAX_CHARS=850</code>）</li>
+<li>翻译块之间等待（<code>SLEEP_SEC=7</code>）</li>
+</ul>
+<p>但 v1 仍有问题：要求旧译文 <code>ctut_translated.txt</code> 必须存在，否则直接报错退出。</p>
+<h2 id="第七阶段：v2-—-旧译文改为可选"><a href="#第七阶段：v2-—-旧译文改为可选" class="headerlink" title="第七阶段：v2 — 旧译文改为可选"></a>第七阶段：v2 — 旧译文改为可选</h2><p>运行 v1 时：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[ERROR] old translation not found: ctut_translated.txt</span><br></pre></td></tr></table></figure>
+
+<p>修复：旧译文不存在时继续运行，按全新 OCR/trans 模式工作：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">USE_OLD_IF_FAIL=0 START_PAGE=1 END_PAGE=10 ./translate_pipe_gnu_trans_ocr_v2.sh</span><br></pre></td></tr></table></figure>
+
+<h2 id="第八阶段：v3-—-修复-Bash-bad-substitution"><a href="#第八阶段：v3-—-修复-Bash-bad-substitution" class="headerlink" title="第八阶段：v3 — 修复 Bash bad substitution"></a>第八阶段：v3 — 修复 Bash bad substitution</h2><p>运行 v2 出现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;translate_pipe_gnu_trans_ocr_v2.sh: line 181: $&#123;out.ocr.tmp%.txt&#125;: bad substitution</span><br></pre></td></tr></table></figure>
+
+<p>原因：Bash 变量名不能包含点号。原代码：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$&#123;out.ocr.tmp%.txt&#125;</span>   <span class="comment"># 错误！</span></span><br></pre></td></tr></table></figure>
+
+<p>修复：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ocr_tmp=<span class="string">&quot;<span class="variable">$out</span>.ocr.tmp&quot;</span></span><br><span class="line">ocr_base=<span class="string">&quot;<span class="variable">$&#123;ocr_tmp%.txt&#125;</span>&quot;</span></span><br><span class="line">tesseract <span class="string">&quot;<span class="variable">$img</span>&quot;</span> <span class="string">&quot;<span class="variable">$ocr_base</span>&quot;</span> -l eng --psm <span class="string">&quot;<span class="variable">$PSM</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="第九阶段：v4-—-修复-Tesseract-输出文件名判断-合并输出"><a href="#第九阶段：v4-—-修复-Tesseract-输出文件名判断-合并输出" class="headerlink" title="第九阶段：v4 — 修复 Tesseract 输出文件名判断 + 合并输出"></a>第九阶段：v4 — 修复 Tesseract 输出文件名判断 + 合并输出</h2><p>运行 v3 时，每页都显示 “OCR failed”，但 <code>page-&#123;i&#125;.failed.txt</code> 为空。</p>
+<p>分析发现：<code>ocr_tmp</code> 本身不以 <code>.txt</code> 结尾，<code>$&#123;ocr_tmp%.txt&#125;</code> 根本没有截断。Tesseract 实际生成的文件是 <code>xxx.en.txt.ocr.tmp.txt</code>，但脚本检查的是 <code>xxx.en.txt.ocr.tmp</code>——永远找不到。</p>
+<p><strong>v4 修复</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 正确的做法：告诉 tesseract 输出 basename，它自动加 .txt</span></span><br><span class="line">ocr_base=<span class="string">&quot;<span class="variable">$out</span>.ocr.tmp&quot;</span>         <span class="comment"># 这是 basename</span></span><br><span class="line">ocr_tmp=<span class="string">&quot;<span class="variable">$ocr_base</span>.txt&quot;</span>         <span class="comment"># tesseract 实际生成的文件</span></span><br></pre></td></tr></table></figure>
+
+<p>同时新增两个功能：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MERGE_FINAL=1   <span class="comment"># 合并每页译文到最终 TXT</span></span><br><span class="line">STDOUT=1        <span class="comment"># 中文译文输出到终端（进度信息走 stderr）</span></span><br></pre></td></tr></table></figure>
+
+<p>测试结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">--- 正在处理第 1 页 ---</span><br><span class="line">[OK] 第 1 页完成</span><br><span class="line">--- 正在处理第 2 页 ---</span><br><span class="line">[OK] 第 2 页完成</span><br><span class="line">--- 正在处理第 3 页 ---</span><br><span class="line">[OK] 第 3 页完成</span><br><span class="line">--- 正在处理第 4 页 ---</span><br><span class="line">[WARN] page 4: OCR extraction failed.</span><br><span class="line">--- 正在处理第 5 页 ---</span><br><span class="line">[OK] 第 5 页完成</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>第 4 页”失败”了——但实际上它本来就是空白页！</p>
+<h2 id="第十阶段：v5（最终版）—-空白页不再误报"><a href="#第十阶段：v5（最终版）—-空白页不再误报" class="headerlink" title="第十阶段：v5（最终版）— 空白页不再误报"></a>第十阶段：v5（最终版）— 空白页不再误报</h2><p>改进逻辑：OCR 后如果没有有效英文文本（<code>&lt; 10</code> 个非空白字符），不调用 <code>trans</code>，直接标记为空白页：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">en_nonspace=$(tr -d <span class="string">&#x27;[:space:]&#x27;</span> &lt; <span class="string">&quot;<span class="variable">$en_file</span>&quot;</span> | wc -c | tr -d <span class="string">&#x27; &#x27;</span>)</span><br><span class="line"><span class="keyword">if</span> [[ <span class="string">&quot;<span class="variable">$&#123;en_nonspace:-0&#125;</span>&quot;</span> -lt 10 ]]; <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">printf</span> <span class="string">&#x27;[本页为空白页，或 OCR 未识别出有效英文文本。]\n&#x27;</span> &gt; <span class="string">&quot;<span class="variable">$out_file</span>&quot;</span></span><br><span class="line">    <span class="built_in">continue</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">--- 正在处理第 4 页 ---</span><br><span class="line">[BLANK] 第 4 页无有效 OCR 文本，已写入占位并跳过 trans</span><br></pre></td></tr></table></figure>
+
+<h2 id="最终方案架构"><a href="#最终方案架构" class="headerlink" title="最终方案架构"></a>最终方案架构</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│  ctut.pdf                                                           │</span><br><span class="line">│      │                                                              │</span><br><span class="line">│      ▼                                                              │</span><br><span class="line">│  pdftoppm -singlefile -png -r 300 -f $p -l $p                      │</span><br><span class="line">│      │                                                              │</span><br><span class="line">│      ▼                                                              │</span><br><span class="line">│  tesseract page.png output -l eng --psm 3                           │</span><br><span class="line">│      │                                                              │</span><br><span class="line">│      ▼                                                              │</span><br><span class="line">│  sed &#x2F; awk &#x2F; grep  (清洗：去控制符、统一引号、去空行)                │</span><br><span class="line">│      │                                                              │</span><br><span class="line">│      ▼                                                              │</span><br><span class="line">│  split_records()  (分块：T&#x3D;可翻译文本，P&#x3D;保护的代码&#x2F;URL)             │</span><br><span class="line">│      │                                                              │</span><br><span class="line">│      ▼                                                              │</span><br><span class="line">│  trans -b en:zh-CN  (翻译，每块 ≤ 850 字符，间隔 7 秒)             │</span><br><span class="line">│      │                                                              │</span><br><span class="line">│      ▼                                                              │</span><br><span class="line">│  gnu_postprocess()  (后处理：&quot;免费软件&quot;→&quot;自由软件&quot;等)               │</span><br><span class="line">│      │                                                              │</span><br><span class="line">│      ▼                                                              │</span><br><span class="line">│  page cache (ctut_gnu_ocr_work&#x2F;zh&#x2F;page-001.zh.txt)                  │</span><br><span class="line">│      │                                                              │</span><br><span class="line">│      ▼                                                              │</span><br><span class="line">│  合并 → ctut_translated_gnu_ocr.txt                                 │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装依赖（Arch-Linux）"><a href="#安装依赖（Arch-Linux）" class="headerlink" title="安装依赖（Arch Linux）"></a>安装依赖（Arch Linux）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pacman -S poppler tesseract tesseract-data-eng translate-shell coreutils gawk sed grep</span><br></pre></td></tr></table></figure>
+
+<p>验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">trans -b en:zh-CN <span class="string">&#x27;This is a test.&#x27;</span></span><br><span class="line"><span class="comment"># 输出：这是一个测试。</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h2><h3 id="测试前-10-页"><a href="#测试前-10-页" class="headerlink" title="测试前 10 页"></a>测试前 10 页</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">chmod +x scripts/translate_pipe_gnu_trans_ocr.sh</span><br><span class="line"></span><br><span class="line">USE_OLD_IF_FAIL=0 START_PAGE=1 END_PAGE=10 FORCE=1 \</span><br><span class="line">  ./scripts/translate_pipe_gnu_trans_ocr.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="跑全书"><a href="#跑全书" class="headerlink" title="跑全书"></a>跑全书</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">USE_OLD_IF_FAIL=0 START_PAGE=1 END_PAGE=290 \</span><br><span class="line">  ./scripts/translate_pipe_gnu_trans_ocr.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="输出到终端"><a href="#输出到终端" class="headerlink" title="输出到终端"></a>输出到终端</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">STDOUT=1 USE_OLD_IF_FAIL=0 START_PAGE=1 END_PAGE=10 FORCE=1 \</span><br><span class="line">  ./scripts/translate_pipe_gnu_trans_ocr.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="同时保存到文件"><a href="#同时保存到文件" class="headerlink" title="同时保存到文件"></a>同时保存到文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">STDOUT=1 USE_OLD_IF_FAIL=0 START_PAGE=1 END_PAGE=10 FORCE=1 \</span><br><span class="line">  ./scripts/translate_pipe_gnu_trans_ocr.sh &gt; terminal_output_zh.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="指定翻译引擎"><a href="#指定翻译引擎" class="headerlink" title="指定翻译引擎"></a>指定翻译引擎</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ENGINE=bing USE_OLD_IF_FAIL=0 START_PAGE=1 END_PAGE=290 \</span><br><span class="line">  ./scripts/translate_pipe_gnu_trans_ocr.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="调整-OCR-参数"><a href="#调整-OCR-参数" class="headerlink" title="调整 OCR 参数"></a>调整 OCR 参数</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DPI=360 PSM=6 USE_OLD_IF_FAIL=0 START_PAGE=1 END_PAGE=10 FORCE=1 \</span><br><span class="line">  ./scripts/translate_pipe_gnu_trans_ocr.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="降低-trans-空响应概率"><a href="#降低-trans-空响应概率" class="headerlink" title="降低 trans 空响应概率"></a>降低 trans 空响应概率</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MAX_CHARS=600 SLEEP_SEC=12 RETRIES=6 USE_OLD_IF_FAIL=0 \</span><br><span class="line">  START_PAGE=1 END_PAGE=290 \</span><br><span class="line">  ./scripts/translate_pipe_gnu_trans_ocr.sh</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置选项速览"><a href="#配置选项速览" class="headerlink" title="配置选项速览"></a>配置选项速览</h2><table>
+<thead>
+<tr>
+<th>变量</th>
+<th>默认值</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PDF_FILE</code></td>
+<td><code>ctut.pdf</code></td>
+<td>输入 PDF</td>
+</tr>
+<tr>
+<td><code>FINAL_DOC</code></td>
+<td><code>ctut_translated_gnu_ocr.txt</code></td>
+<td>合并后的中文输出</td>
+</tr>
+<tr>
+<td><code>WORK_DIR</code></td>
+<td><code>ctut_gnu_ocr_work</code></td>
+<td>工作目录</td>
+</tr>
+<tr>
+<td><code>START_PAGE</code></td>
+<td><code>1</code></td>
+<td>起始页</td>
+</tr>
+<tr>
+<td><code>END_PAGE</code></td>
+<td><code>290</code></td>
+<td>结束页</td>
+</tr>
+<tr>
+<td><code>EXTRACTOR</code></td>
+<td><code>ocr</code></td>
+<td><code>ocr</code> / <code>auto</code> / <code>pdftotext</code></td>
+</tr>
+<tr>
+<td><code>DPI</code></td>
+<td><code>300</code></td>
+<td>渲染分辨率</td>
+</tr>
+<tr>
+<td><code>PSM</code></td>
+<td><code>3</code></td>
+<td>Tesseract 页面分割模式</td>
+</tr>
+<tr>
+<td><code>ENGINE</code></td>
+<td>空（Google）</td>
+<td><code>trans -b -e ENGINE</code></td>
+</tr>
+<tr>
+<td><code>MAX_CHARS</code></td>
+<td><code>850</code></td>
+<td>每块最大字符数</td>
+</tr>
+<tr>
+<td><code>SLEEP_SEC</code></td>
+<td><code>7</code></td>
+<td>翻译块间等待秒数</td>
+</tr>
+<tr>
+<td><code>RETRIES</code></td>
+<td><code>4</code></td>
+<td>失败重试次数</td>
+</tr>
+<tr>
+<td><code>FORCE</code></td>
+<td><code>0</code></td>
+<td>是否重跑已缓存页</td>
+</tr>
+<tr>
+<td><code>MERGE_FINAL</code></td>
+<td><code>1</code></td>
+<td>是否合并输出</td>
+</tr>
+<tr>
+<td><code>STDOUT</code></td>
+<td><code>0</code></td>
+<td>是否输出到终端</td>
+</tr>
+<tr>
+<td><code>BLANK_MARK</code></td>
+<td><code>1</code></td>
+<td>是否标记空白页</td>
+</tr>
+<tr>
+<td><code>USE_OLD_IF_FAIL</code></td>
+<td><code>1</code></td>
+<td>失败时是否用旧译文回退</td>
+</tr>
+<tr>
+<td><code>ONLY_BAD</code></td>
+<td><code>0</code></td>
+<td>只重跑坏页</td>
+</tr>
+</tbody></table>
+<h2 id="工作目录结构"><a href="#工作目录结构" class="headerlink" title="工作目录结构"></a>工作目录结构</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ctut_gnu_ocr_work&#x2F;</span><br><span class="line">├── en&#x2F;          # 每页 OCR 英文文本</span><br><span class="line">├── zh&#x2F;          # 每页中文译文缓存</span><br><span class="line">├── old_zh&#x2F;      # 旧译文切分的页面草稿</span><br><span class="line">├── log&#x2F;         # trans&#x2F;tesseract&#x2F;pdftoppm 日志</span><br><span class="line">├── img&#x2F;         # 临时页面图像（处理后删除）</span><br><span class="line">└── tmp&#x2F;         # 临时文件</span><br></pre></td></tr></table></figure>
+
+<h2 id="关键设计决策"><a href="#关键设计决策" class="headerlink" title="关键设计决策"></a>关键设计决策</h2><h3 id="1-为什么-OCR-first-而不是-pdftotext-first？"><a href="#1-为什么-OCR-first-而不是-pdftotext-first？" class="headerlink" title="1. 为什么 OCR-first 而不是 pdftotext-first？"></a>1. 为什么 OCR-first 而不是 pdftotext-first？</h3><p>很多 PDF 的文本层编码有问题。<code>pdftotext</code> 对 <code>ctut.pdf</code> 提取出乱码。OCR 路线虽然慢，但对任何 PDF 都能工作。</p>
+<p>脚本保留了 <code>EXTRACTOR=auto</code> 模式：先试 pdftotext，如果结果质量差（有效 ASCII 字母太少、控制字符太多），自动切换到 OCR。</p>
+<h3 id="2-为什么要分块翻译？"><a href="#2-为什么要分块翻译？" class="headerlink" title="2. 为什么要分块翻译？"></a>2. 为什么要分块翻译？</h3><p>整页一次性扔给 <code>trans</code>：</p>
+<ul>
+<li>容易触发 Google 翻译限流，返回 <code>Null response</code></li>
+<li>代码片段被误翻译</li>
+<li>一个块失败导致整页丢失</li>
+</ul>
+<p>分块后每块 ≤ 850 字符，块间等待 7 秒，极大降低了失败率。</p>
+<h3 id="3-为什么要区分-T（可翻译）和-P（保护）记录？"><a href="#3-为什么要区分-T（可翻译）和-P（保护）记录？" class="headerlink" title="3. 为什么要区分 T（可翻译）和 P（保护）记录？"></a>3. 为什么要区分 T（可翻译）和 P（保护）记录？</h3><p><code>split_records()</code> 函数用 AWK 判断每一行是否是代码/URL/C 语言语句：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> protected(line) &#123;</span><br><span class="line">    <span class="keyword">if</span> (line ~ <span class="regexp">/https?:\/\//</span>) return <span class="number">1</span></span><br><span class="line">    <span class="keyword">if</span> (line ~ <span class="regexp">/^[[:space:]]*#(include|define|if|ifdef)/</span>) return <span class="number">1</span></span><br><span class="line">    <span class="keyword">if</span> (line ~ <span class="regexp">/;[[:space:]]*$/</span> &amp;&amp; line ~ <span class="regexp">/[()=]/</span>) return <span class="number">1</span></span><br><span class="line">    <span class="keyword">if</span> (line ~ <span class="regexp">/==|!=|&lt;=|&gt;=|\+\+|--|&amp;&amp;|\|\|/</span>) return <span class="number">1</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>保护块直接原样输出，不送翻译器。</p>
+<h3 id="4-GNU-术语后处理"><a href="#4-GNU-术语后处理" class="headerlink" title="4. GNU 术语后处理"></a>4. GNU 术语后处理</h3><p>翻译器可能把 “free software” 翻译成 “免费软件”。<code>gnu_postprocess()</code> 自动修正：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">gnu_postprocess</span></span>() &#123;</span><br><span class="line">    sed -E \</span><br><span class="line">        -e <span class="string">&#x27;s/免费软件/自由软件/g&#x27;</span> \</span><br><span class="line">        -e <span class="string">&#x27;s/免费文档/自由文档/g&#x27;</span> \</span><br><span class="line">        -e <span class="string">&#x27;s/GNU免费文档许可证/GNU 自由文档许可证/g&#x27;</span> \</span><br><span class="line">        -e <span class="string">&#x27;s/原始码/源代码/g&#x27;</span> \</span><br><span class="line">        -e <span class="string">&#x27;s/连结器/链接器/g&#x27;</span> \</span><br><span class="line">        -e <span class="string">&#x27;s/函式/函数/g&#x27;</span> \</span><br><span class="line">        -e <span class="string">&#x27;s/阵列/数组/g&#x27;</span> \</span><br><span class="line">        -e <span class="string">&#x27;s/字串/字符串/g&#x27;</span> \</span><br><span class="line">        -e <span class="string">&#x27;s/您/你/g&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-断点续跑"><a href="#5-断点续跑" class="headerlink" title="5. 断点续跑"></a>5. 断点续跑</h3><p>每页译文缓存到 <code>ctut_gnu_ocr_work/zh/page-XXX.zh.txt</code>。下次运行时已完成的页直接跳过：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> [[ -s <span class="string">&quot;<span class="variable">$out_file</span>&quot;</span> &amp;&amp; <span class="string">&quot;<span class="variable">$FORCE</span>&quot;</span> != 1 ]]; <span class="keyword">then</span></span><br><span class="line">    say <span class="string">&quot;--- 第 <span class="variable">$p</span> 页已存在，跳过 ---&quot;</span></span><br><span class="line">    <span class="built_in">continue</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+
+<p>中途 Ctrl-C 不丢失进度。</p>
+<h2 id="试错过程时间线"><a href="#试错过程时间线" class="headerlink" title="试错过程时间线"></a>试错过程时间线</h2><table>
+<thead>
+<tr>
+<th>时间</th>
+<th>事件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>开始</td>
+<td>Google AI 模式推荐三种方案，选择 poppler + translate-shell</td>
+</tr>
+<tr>
+<td>早期</td>
+<td><code>pdftotext ctut.pdf - | trans -b :zh</code> 发现文本层乱码</td>
+</tr>
+<tr>
+<td>v1</td>
+<td>写第一版 OCR 管线，发现 grep 警告、trans 限流、无法续跑</td>
+</tr>
+<tr>
+<td>中间</td>
+<td>曾考虑 Python 校译方案和 Ollama，最终否决，坚持 GNU 风格</td>
+</tr>
+<tr>
+<td>v2</td>
+<td>旧译文改为可选，不再强制要求</td>
+</tr>
+<tr>
+<td>v3</td>
+<td>修复 Bash bad substitution（变量名不能含点号）</td>
+</tr>
+<tr>
+<td>v4</td>
+<td>修复 Tesseract 输出文件名 bug + 增加合并和 STDOUT 功能</td>
+</tr>
+<tr>
+<td>v5</td>
+<td>空白页不再误报为 OCR 失败，增加 BLANK_MARK</td>
+</tr>
+<tr>
+<td>最终</td>
+<td>稳定版定名为 <code>scripts/translate_pipe_gnu_trans_ocr.sh</code></td>
+</tr>
+</tbody></table>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这个项目从一个简单的 <code>pdftotext | trans</code> 管道，经过多次试错，演化为一个完整的、可断点续跑的、符合 Unix 哲学的 PDF 翻译管线。</p>
+<p>核心工具链：</p>
+<ul>
+<li><strong>pdftoppm</strong>（Poppler）：PDF 页面渲染为 PNG</li>
+<li><strong>tesseract</strong>：OCR 识别英文</li>
+<li><strong>sed / awk / grep</strong>：文本清洗、分块、保护代码</li>
+<li><strong>trans</strong>（translate-shell）：翻译为中文</li>
+<li><strong>sed</strong>：GNU 术语后处理</li>
+</ul>
+<p>没有 Python，没有 Node.js，没有 Docker，没有大模型 API Key（除非你自己配 trans 引擎）。纯粹的 Bash + GNU 工具 + 管道。</p>
+<p>这就是 Unix 哲学：每个工具做一件事，通过管道组合完成复杂任务。</p>
+<hr>
+<p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/gsioeo/gnu-pdf-trans-pipe">gnu-pdf-trans-pipe</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone git@github.com:gsioeo&#x2F;gnu-pdf-trans-pipe.git</span><br><span class="line">cd gnu-pdf-trans-pipe</span><br><span class="line">chmod +x scripts&#x2F;translate_pipe_gnu_trans_ocr.sh</span><br><span class="line">USE_OLD_IF_FAIL&#x3D;0 START_PAGE&#x3D;1 END_PAGE&#x3D;10 FORCE&#x3D;1 .&#x2F;scripts&#x2F;translate_pipe_gnu_trans_ocr.sh</span><br></pre></td></tr></table></figure>
+
+        </div>
+
+        
+            <div class="article-nav">
+                
+                
+                    <div class="article-next">
+                        <a class="next btn"
+                           rel="next"
+                           href="/AGILENT-1100-ARCH-LICOP-BLOG-ac5e7e8c743b/"
+                        >
+                            <span class="post-nav-title-item">AGILENT-1100-ARCH-LICOP-BLOG</span>
+                            <span class="post-nav-item">Next posts</span>
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+        
+            <div class="comment-container">
+                <div class="comments-container">
+    <div id="comment-anchor"></div>
+    
+        
+    <div class="valine-container">
+        <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+        <div id="vcomments"></div>
+        <script>
+            new Valine({
+                el: '#vcomments',
+                appId: '9z5bEVzKj46jstwNI8LxhAU6-MdYXbMMI',
+                appKey: 'iEDztTkcDrO0LsO944uIDrC3',
+                meta: ''.split(','),
+                avatar: 'wavatar',
+                enableQQ: true,
+                placeholder: '我看着你，就如你看着我',
+                lang: 'en'.toLowerCase()
+            });
+
+
+            // Valine 评论列表增加"博主"标识
+            const getValineDomTimer = setInterval(() => {
+                const vcards = document.querySelectorAll('#vcomments .vcards .vcard');
+                if (vcards.length > 0) {
+
+                    let author = 'T';
+                    if (author) {
+                        author = author.toLocaleLowerCase();
+                    }
+
+                    let email = 'gsioeo@gmail.com';
+                    if (email) {
+                        email = email.toLocaleLowerCase();
+                    }
+
+                    for (let vcard of vcards) {
+                        const vnick = vcard.querySelector('.vhead .vnick');
+                        if (vnick.innerHTML.toLocaleLowerCase() === author) {
+                            vcard.classList.add('author');
+                        }
+                    }
+                    clearInterval(getValineDomTimer);
+                } else {
+                    clearInterval(getValineDomTimer);
+                }
+            }, 2000);
+        </script>
+    </div>
+
+
+    
+</div>
+
+            </div>
+        
+    </div>
+</div>
+
+
+                    
+                </main>
+
+            </div>
+
+            <div class="page-main-content-bottom">
+                <footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info info-item">
+            &copy; 2026 <i class="fa fa-heart-o"></i> <a href="/">T</a>
+        </div>
+        
+        <div class="theme-info info-item">
+            Powered by <a target="_blank" href="https://hexo.io">Hexo</a> | Theme <a class="theme-version" target="_blank"></a>
+        </div>
+    </div>
+</footer>
+
+            </div>
+        </div>
+    </main>
+
+    <div class="sidebar-tools">
+        <div class="tools-container">
+    <ul class="tools-list">
+        
+
+        
+            <li class="go-comment">
+                <i class="fa fa-comment"></i>
+            </li>
+        
+
+        <!-- TOC aside toggle -->
+        
+
+    </ul>
+</div>
+
+    </div>
+
+    <div class="sidebar-tools-2">
+        <div class="tools2-container">
+
+    <button class="tools-button">
+        <i class="fa fa-plus"></i>
+    </button>
+
+    <ul class="tools-wrapper">
+        <!-- back2top -->
+        
+            <li class="tools-item scroll-to-bottom">
+                <i class="fa fa-arrow-down"></i>
+            </li>
+            <li class="tools-item scroll-to-top">
+                <i class="fa fa-arrow-up"></i>
+            </li>
+        
+
+        <!-- mode toggle -->
+        <li class="tools-item mode-toggle">
+            <i class="fa fa-moon-o"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+
+    </ul>
+</div>
+
+    </div>
+
+
+    <!-- page aside -->
+    <aside class="page-aside">
+        
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A1%AC%E6%A0%B8%E7%BB%88%E7%AB%AF-PDF-%E7%BF%BB%E8%AF%91%E7%AE%A1%E7%BA%BF%EF%BC%9A%E7%94%A8-Poppler-Translate-Shell-%E6%9E%84%E5%BB%BA%E7%AC%A6%E5%90%88-Unix-%E5%93%B2%E5%AD%A6%E7%9A%84%E7%BF%BB%E8%AF%91%E6%96%B9%E6%A1%88"><span class="nav-number">1.</span> <span class="nav-text">硬核终端 PDF 翻译管线：用 Poppler + Translate-Shell 构建符合 Unix 哲学的翻译方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B5%B7%E5%9B%A0%EF%BC%9A%E7%BF%BB%E8%AF%91%E4%B8%80%E6%9C%AC-GNU-C-%E7%BC%96%E7%A8%8B%E6%95%99%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">起因：翻译一本 GNU C 编程教程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E9%98%B6%E6%AE%B5%EF%BC%9AGoogle-%E8%B0%83%E7%A0%94"><span class="nav-number">1.2.</span> <span class="nav-text">第一阶段：Google 调研</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E4%B8%80%EF%BC%9APDFMathTranslate-pdf2zh"><span class="nav-number">1.2.1.</span> <span class="nav-text">方案一：PDFMathTranslate (pdf2zh)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E4%BA%8C%EF%BC%9APoppler-Translate-Shell%EF%BC%88%E6%9C%80%E7%BB%88%E9%80%89%E6%8B%A9%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">方案二：Poppler + Translate-Shell（最终选择）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E4%B8%89%EF%BC%9AAUR-%E7%9A%84-pdf-translator"><span class="nav-number">1.2.3.</span> <span class="nav-text">方案三：AUR 的 pdf_translator</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%88%9D%E6%AC%A1%E5%B0%9D%E8%AF%95-pdftotext-%E7%9B%B4%E6%8E%A5%E7%AE%A1%E9%81%93"><span class="nav-number">1.3.</span> <span class="nav-text">第二阶段：初次尝试 pdftotext 直接管道</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%AE%A1%E9%81%93%E5%91%BD%E4%BB%A4"><span class="nav-number">1.3.1.</span> <span class="nav-text">基础管道命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E9%A1%B5%E9%9D%A2%E8%8C%83%E5%9B%B4"><span class="nav-number">1.3.2.</span> <span class="nav-text">指定页面范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%9D%E7%95%99%E6%AE%B5%E8%90%BD%E5%B8%83%E5%B1%80"><span class="nav-number">1.3.3.</span> <span class="nav-text">保留段落布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%BC%E5%87%BA%E4%B8%BA%E6%96%87%E4%BB%B6"><span class="nav-number">1.3.4.</span> <span class="nav-text">导出为文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%8D%A2%E7%BF%BB%E8%AF%91%E5%BC%95%E6%93%8E"><span class="nav-number">1.3.5.</span> <span class="nav-text">更换翻译引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#translate-shell-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">1.3.6.</span> <span class="nav-text">translate-shell 配置文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E9%98%B6%E6%AE%B5%EF%BC%9Apdftotext-%E7%BF%BB%E8%BD%A6"><span class="nav-number">1.4.</span> <span class="nav-text">第三阶段：pdftotext 翻车</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E9%98%B6%E6%AE%B5%EF%BC%9A%E7%AC%AC%E4%B8%80%E7%89%88-OCR-%E7%AE%A1%E7%BA%BF%E8%84%9A%E6%9C%AC-translate-pipe-sh"><span class="nav-number">1.5.</span> <span class="nav-text">第四阶段：第一版 OCR 管线脚本 (translate_pipe.sh)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%89%88%E6%9A%B4%E9%9C%B2%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.5.1.</span> <span class="nav-text">第一版暴露的问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E9%98%B6%E6%AE%B5%EF%BC%9A%E7%A1%AE%E7%AB%8B-GNU-%E9%A3%8E%E6%A0%BC%E7%BA%A6%E6%9D%9F"><span class="nav-number">1.6.</span> <span class="nav-text">第五阶段：确立 GNU 风格约束</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E9%98%B6%E6%AE%B5%EF%BC%9AOCR-first-GNU-trans-%E7%89%88%E6%9C%AC-v1"><span class="nav-number">1.7.</span> <span class="nav-text">第六阶段：OCR-first GNU&#x2F;trans 版本 (v1)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%83%E9%98%B6%E6%AE%B5%EF%BC%9Av2-%E2%80%94-%E6%97%A7%E8%AF%91%E6%96%87%E6%94%B9%E4%B8%BA%E5%8F%AF%E9%80%89"><span class="nav-number">1.8.</span> <span class="nav-text">第七阶段：v2 — 旧译文改为可选</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%85%AB%E9%98%B6%E6%AE%B5%EF%BC%9Av3-%E2%80%94-%E4%BF%AE%E5%A4%8D-Bash-bad-substitution"><span class="nav-number">1.9.</span> <span class="nav-text">第八阶段：v3 — 修复 Bash bad substitution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B9%9D%E9%98%B6%E6%AE%B5%EF%BC%9Av4-%E2%80%94-%E4%BF%AE%E5%A4%8D-Tesseract-%E8%BE%93%E5%87%BA%E6%96%87%E4%BB%B6%E5%90%8D%E5%88%A4%E6%96%AD-%E5%90%88%E5%B9%B6%E8%BE%93%E5%87%BA"><span class="nav-number">1.10.</span> <span class="nav-text">第九阶段：v4 — 修复 Tesseract 输出文件名判断 + 合并输出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E9%98%B6%E6%AE%B5%EF%BC%9Av5%EF%BC%88%E6%9C%80%E7%BB%88%E7%89%88%EF%BC%89%E2%80%94-%E7%A9%BA%E7%99%BD%E9%A1%B5%E4%B8%8D%E5%86%8D%E8%AF%AF%E6%8A%A5"><span class="nav-number">1.11.</span> <span class="nav-text">第十阶段：v5（最终版）— 空白页不再误报</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E7%BB%88%E6%96%B9%E6%A1%88%E6%9E%B6%E6%9E%84"><span class="nav-number">1.12.</span> <span class="nav-text">最终方案架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%EF%BC%88Arch-Linux%EF%BC%89"><span class="nav-number">1.13.</span> <span class="nav-text">安装依赖（Arch Linux）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">1.14.</span> <span class="nav-text">使用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E5%89%8D-10-%E9%A1%B5"><span class="nav-number">1.14.1.</span> <span class="nav-text">测试前 10 页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%91%E5%85%A8%E4%B9%A6"><span class="nav-number">1.14.2.</span> <span class="nav-text">跑全书</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E5%88%B0%E7%BB%88%E7%AB%AF"><span class="nav-number">1.14.3.</span> <span class="nav-text">输出到终端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%97%B6%E4%BF%9D%E5%AD%98%E5%88%B0%E6%96%87%E4%BB%B6"><span class="nav-number">1.14.4.</span> <span class="nav-text">同时保存到文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E7%BF%BB%E8%AF%91%E5%BC%95%E6%93%8E"><span class="nav-number">1.14.5.</span> <span class="nav-text">指定翻译引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E6%95%B4-OCR-%E5%8F%82%E6%95%B0"><span class="nav-number">1.14.6.</span> <span class="nav-text">调整 OCR 参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%99%8D%E4%BD%8E-trans-%E7%A9%BA%E5%93%8D%E5%BA%94%E6%A6%82%E7%8E%87"><span class="nav-number">1.14.7.</span> <span class="nav-text">降低 trans 空响应概率</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9%E9%80%9F%E8%A7%88"><span class="nav-number">1.15.</span> <span class="nav-text">配置选项速览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="nav-number">1.16.</span> <span class="nav-text">工作目录结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E5%86%B3%E7%AD%96"><span class="nav-number">1.17.</span> <span class="nav-text">关键设计决策</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88-OCR-first-%E8%80%8C%E4%B8%8D%E6%98%AF-pdftotext-first%EF%BC%9F"><span class="nav-number">1.17.1.</span> <span class="nav-text">1. 为什么 OCR-first 而不是 pdftotext-first？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%88%86%E5%9D%97%E7%BF%BB%E8%AF%91%EF%BC%9F"><span class="nav-number">1.17.2.</span> <span class="nav-text">2. 为什么要分块翻译？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%8C%BA%E5%88%86-T%EF%BC%88%E5%8F%AF%E7%BF%BB%E8%AF%91%EF%BC%89%E5%92%8C-P%EF%BC%88%E4%BF%9D%E6%8A%A4%EF%BC%89%E8%AE%B0%E5%BD%95%EF%BC%9F"><span class="nav-number">1.17.3.</span> <span class="nav-text">3. 为什么要区分 T（可翻译）和 P（保护）记录？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-GNU-%E6%9C%AF%E8%AF%AD%E5%90%8E%E5%A4%84%E7%90%86"><span class="nav-number">1.17.4.</span> <span class="nav-text">4. GNU 术语后处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E6%96%AD%E7%82%B9%E7%BB%AD%E8%B7%91"><span class="nav-number">1.17.5.</span> <span class="nav-text">5. 断点续跑</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%95%E9%94%99%E8%BF%87%E7%A8%8B%E6%97%B6%E9%97%B4%E7%BA%BF"><span class="nav-number">1.18.</span> <span class="nav-text">试错过程时间线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.19.</span> <span class="nav-text">总结</span></a></li></ol></li></ol>
+    </div>
+</div>
+        
+    </aside>
+
+</div>
+
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/header-shrink.js"></script>
+<script src="/js/dark-light-toggle.js"></script>
+<script src="/js/main.js"></script>
+
+
+
+
+
+    
+<script src="/js/back2top.js"></script>
+
+
+
+
+
+    
+<script src="/js/left-side-toggle.js"></script>
+
+
+    
+        
+<script src="/js/code-copy.js"></script>
+
+    
+
+    
+
+
+</body>
+</html>
