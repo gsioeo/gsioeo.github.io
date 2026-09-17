@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    
+    <title>
+        Independent-Verification-and-Localization-of-the-MRM-Toolchain-v2 |
+        
+        XZB
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <link rel="shortcut icon" href="/images/favicon.png">
+    
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script id="hexo-configurations">
+    let ILS = window.ILS || {};
+    let CONFIG = {"hostname":"xzbloggers.cn","root":"/","localsearch":{"enable":false,"trigger":"auto","unescape":false,"preload":false},"toc":{"enable":false,"number":true,"expand_all":true},"back2top":{"enable":true}};
+  </script>
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body>
+<div class="page-container">
+
+    <header class="page-header">
+        <div class="header-progress"></div>
+    </header>
+
+    <main class="page-main">
+
+        <div class="page-main-content">
+
+            <div class="page-main-content-top">
+                <header class="header-wrapper">
+
+    <div class="header-content">
+
+        <a class="logo-title" href="/">
+            XZB
+        </a>
+
+        <ul class="menu-list">
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/"
+                    >
+                        HOME
+                    </a>
+                </li>
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/archives"
+                    >
+                        ARCHIVES
+                    </a>
+                </li>
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/links"
+                    >
+                        LINKS
+                    </a>
+                </li>
+            
+        </ul>
+
+        <div class="menu-bar">
+            <div class="menu-bar-middle"></div>
+        </div>
+    </div>
+
+    <div class="header-drawer">
+        <ul class="drawer-menu-list">
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/">HOME</a>
+                </li>
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/archives">ARCHIVES</a>
+                </li>
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/links">LINKS</a>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+            </div>
+
+            <div class="page-main-content-middle">
+
+                <main class="main-content normal-code-theme">
+
+                    
+                        <div class="fade-in-down-animation">
+    <div class="article-content-container">
+
+        <div class="article-title">
+            <span class="title-hover-animation">Independent-Verification-and-Localization-of-the-MRM-Toolchain-v2</span>
+        </div>
+
+        
+            <div class="article-header">
+                <div class="avatar">
+                    <img src="/images/avatar.png">
+                </div>
+                <div class="info">
+                    <div class="author">
+                        <span>T</span>
+                        <span class="level">Lv1</span>
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa fa-calendar-o"></i> 2026-09-17 07:36:04
+    </span>
+    
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        <div class="article-content markdown-body">
+            <h1 id="证据链而非信任：MRM-工具链-v2-的独立验证与定位"><a href="#证据链而非信任：MRM-工具链-v2-的独立验证与定位" class="headerlink" title="证据链而非信任：MRM 工具链 v2 的独立验证与定位"></a>证据链而非信任：MRM 工具链 v2 的独立验证与定位</h1><h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>第一阶段的工作证明了计算链条内部自洽：在 Linux 上直读安捷伦 <code>.d</code>，从交替采集的全扫描与 MRM 数据中提取指定离子对，完成积分、同批工作曲线拟合与浓度回算。但内部自洽还不构成外部证据。分析实验室真正要问的是：这条链上的每一步能否由另一套独立实现复核，差异能否定位到具体扫描，而不是被容差吞掉。</p>
+<p>第二阶段因此没有扩张定量模型，而是补上三项能力：按采集语义检索已采集的 MRM 通道，用 MassQL 直接在扫描记录上表达谱图模式，以及用另一套开源 reader 逐扫描比对。</p>
+<p>实测覆盖三个时期、36 个 <code>.d</code> 数据集、198,052 次扫描。两套 reader 在扫描顺序、保留时间、每帧峰数与 m/z 上没有出现未解释差异；196,831 次扫描的差异被明确归类为一种表示差异——独立 reader 对这批单位分辨率 GC-QqQ 数据返回整数强度，而本工具保留小数强度。这一差异被单独标记，而不是通过把绝对容差放宽到 1 来隐藏。</p>
+<h2 id="1-先把两类分析任务分开"><a href="#1-先把两类分析任务分开" class="headerlink" title="1. 先把两类分析任务分开"></a>1. 先把两类分析任务分开</h2><p>GC-EI 全扫描定性与小分子 MRM 定量不是同一个任务，混为一谈会导致错误的工具选型结论。</p>
+<p>GC-EI 定性的主线是对完整全扫描做色谱峰解卷积，再用保留时间或保留指数结合 EI 谱图相似度检索比对。这条路上已有成熟方案：NIST AMDIS 专门解决自动解卷积与鉴定，MZmine 也提供 GC-EI 解卷积、谱图相似度与跨样对齐工作流。在这条路上，本工具最合理的职责是把 <code>.d</code> 可靠地转成开放格式或提供完整扫描，而不是重写一套 AMDIS。</p>
+<p>MRM 定量面对的是预先设定的 Q1/Q3 通道。它关心通道是否真的被采集、碰撞能量是否一致、时间段与方法段如何解释、峰面积如何进入同批校准，以及失败结果是否仍被错误报告为浓度。这里不需要 EI 解卷积，但高度依赖厂商原始数据语义。</p>
+<p>因此“已有 AMDIS”不能消除 Linux 下 GC-MRM 的数据入口问题；同理，“已经能读 mzML”也不等于能完整恢复方法中的时间段、扫描方法、dwell、gain 与通道声明——而这些正是判断一条通道身份与可比性的依据。</p>
+<h2 id="2-成熟工具已经覆盖了什么"><a href="#2-成熟工具已经覆盖了什么" class="headerlink" title="2. 成熟工具已经覆盖了什么"></a>2. 成熟工具已经覆盖了什么</h2><p>通用 MRM 定量并非空白地带。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://skyline.ms/">Skyline</a> 是成熟的开源客户端，支持小分子 SRM/MRM、内标与校准曲线。</li>
+<li><a target="_blank" rel="noopener" href="https://slinghub.github.io/MRMhub/">MRMhub</a> 提供小分子 LC-MRM 峰处理与定量工作流，含线性或二次校准、权重、LOD/LOQ、QC、漂移与批次校正。</li>
+<li><a target="_blank" rel="noopener" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11339730/">MRMQuant</a> 提供图形化定量流程。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/mwang87/MassQueryLanguage">MassQL</a> 用统一查询语言表达母离子、子离子、保留时间与相对强度模式。</li>
+</ul>
+<p>这说明，重复开发通用界面、全套校准模型与完整批次统计不会形成差异化价值。真正稀缺的是下列能力的组合：Linux 原生、直读现代安捷伦 <code>.d</code>、理解 GC-QqQ 的全扫描与 MRM 交替采集、离线无需登录、支持命令行批处理、保留通道语义，并输出可审计的溯源记录。</p>
+<p>工具的定位因此收在“可信数据入口 + 严格提取核心”，把标准化结果交给现有统计与定量生态，而不是替代它们。</p>
+<h2 id="3-第一项新增：按采集语义检索通道"><a href="#3-第一项新增：按采集语义检索通道" class="headerlink" title="3. 第一项新增：按采集语义检索通道"></a>3. 第一项新增：按采集语义检索通道</h2><p>检索命令不需要浓度表或目标物配置，先回答一个更基础的问题：这些文件究竟采集了哪些符合条件的通道。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">python3 -m mrm_quant search-mrm \</span><br><span class="line">  --<span class="built_in">source</span> ../batch-folder --out quant_results/search_001 \</span><br><span class="line">  --q1 204 --q3 93 --ce 30 --polarity 0 \</span><br><span class="line">  --segment 1 --method 1 --rt-range <span class="string">&quot;14.2 14.7&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>Q1、Q3、碰撞能量、极性、时间段与方法段都可独立作为条件，默认质量容差为 0.01 Da，碰撞能量容差为 0.01 eV。输出包含每针信息、命中通道表与每条通道的完整原生曲线；保留时间范围只限制响应摘要，不裁剪原始曲线。若条件命中多条通道，检索结果标记为 <code>ambiguous</code>，程序不替使用者决定哪条是定量通道；无命中的进样则列入溯源记录的未匹配清单。</p>
+<p>在实测的一针标准上，上述条件唯一命中目标通道，输出 2454 个原生 MRM 点，与定量流程所用的通道和面积一致。这一步的价值在于把“方法声明了什么”与“数据里真的有什么”分开：前者来自方法 XML，后者来自扫描记录，只有两者对上，通道身份才成立。</p>
+<h2 id="4-第二项新增：不经-mzML-直接执行-MassQL"><a href="#4-第二项新增：不经-mzML-直接执行-MassQL" class="headerlink" title="4. 第二项新增：不经 mzML 直接执行 MassQL"></a>4. 第二项新增：不经 mzML 直接执行 MassQL</h2><p>MassQL 的 Python 接口可以接收预先构造的 MS1 与 MS2 数据表，因此这里将规范化的扫描记录直接映射为 MassQL 所需字段，不再先写入临时 mzML。省略中间格式有两个好处：既能避免转换环节引入精度与元数据损失，也能避免厂商语义被压入 mzML 的通用字段后难以完整还原。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python3 -m mrm_quant search-massql \</span><br><span class="line">  --<span class="built_in">source</span> ../run.d --out quant_results/massql_001 \</span><br><span class="line">  --query <span class="string">&#x27;QUERY scaninfo(MS2DATA) WHERE MS2PREC=204:TOLERANCEMZ=0.01 AND MS2PROD=93:TOLERANCEMZ=0.01:INTENSITYPERCENT=1&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>每个峰保留原始强度，归一化列按 MassQL 官方载入器的约定使用 0–1 比例。全扫描帧与 MRM 帧分别进入 MS1/MS2 表；MRM 的 Q1 作为母离子，实际采集的子离子数组作为产物离子，最近的一帧前置全扫描作为关联扫描。</p>
+<p>MassQL 本身不表达安捷伦的扫描类型、碰撞能量、时间段、方法段与循环号，因此这些字段另存为一张上下文表，可用扫描号与查询结果连接。这样既获得通用查询语言的表达力，又不牺牲厂商采集上下文——对定量而言，后者决定了一条谱图记录能不能被当作某条通道的观测值。</p>
+<p>在实测的一针标准上，“母离子 204、子离子 93、相对强度不低于基峰 1%”的查询返回 1854 个扫描。测试还构造了包含基峰及其 10% 强度次级峰的合成谱：当阈值设为 20% 时，查询必须拒绝该次级峰。这个测试用于验证归一化尺度与 MassQL 引擎一致，而不是自行定义一套百分比。</p>
+<h2 id="5-第三项新增：用独立-reader-逐扫描对照"><a href="#5-第三项新增：用独立-reader-逐扫描对照" class="headerlink" title="5. 第三项新增：用独立 reader 逐扫描对照"></a>5. 第三项新增：用独立 reader 逐扫描对照</h2><p><a target="_blank" rel="noopener" href="https://github.com/evanyeyeye/rainbow">rainbow</a> 已支持跨平台读取安捷伦质心数据，因此本文将它作为独立实现，逐扫描比较扫描顺序与总数、保留时间、每帧峰数、每个峰的 m/z 和强度，并记录缺失扫描、额外扫描与具体超差原因。</p>
+<table>
+<thead>
+<tr>
+<th>数据组</th>
+<th>采集模式</th>
+<th align="right">进样数</th>
+<th align="right">扫描数</th>
+<th align="right">严格一致</th>
+<th align="right">整数化差异</th>
+<th align="right">未解释失败</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第一时期</td>
+<td>全扫描</td>
+<td align="right">9</td>
+<td align="right">56,416</td>
+<td align="right">25</td>
+<td align="right">56,391</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>第二时期</td>
+<td>全扫描 + MRM</td>
+<td align="right">8</td>
+<td align="right">48,384</td>
+<td align="right">48</td>
+<td align="right">48,336</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>第三时期</td>
+<td>全扫描 + MRM</td>
+<td align="right">19</td>
+<td align="right">93,252</td>
+<td align="right">1,148</td>
+<td align="right">92,104</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>合计</td>
+<td></td>
+<td align="right">36</td>
+<td align="right">198,052</td>
+<td align="right">1,221</td>
+<td align="right">196,831</td>
+<td align="right">0</td>
+</tr>
+</tbody></table>
+<p>“严格一致”指在默认严格容差（m/z 与保留时间 1e-6，强度相对 1e-6）下四项全部一致。其余扫描的保留时间、峰数与 m/z 仍然一致，差异只出现在强度：独立 reader 返回的无符号整数严格等于本工具小数强度的整数部分。</p>
+<p>这个结果不能写成“两个 reader 完全一致”，也不应通过把绝对容差放宽到 1 来掩盖。验证器把它单独归类为整数化差异，总状态记为“通过并存在整数化差异”。它证明了扫描布局、保留时间、m/z、峰数与强度整数部分的一致性，同时明确了一件事：独立 reader 不能作为小数强度的证据，而小数部分恰恰关系到低浓度端的积分面积。</p>
+<p>从分析角度看，这类交叉验证回答的是“读取层是否可信”，不能回答“积分与定量是否与厂商一致”。下一层证据只能来自厂商参考导出：在相同 Q1/Q3、碰撞能量与积分窗口下比较时间点、通道强度、峰面积与最终浓度，容差事先约定，不随结果放宽。在取得这份基准之前，工具不声明与厂商软件等价。</p>
+<h2 id="6-验收与可复现性"><a href="#6-验收与可复现性" class="headerlink" title="6. 验收与可复现性"></a>6. 验收与可复现性</h2><p>验收环境为 Python 3.14.7、pandas 3.0.5、numpy 2.5.3、matplotlib 3.11.2，可选依赖版本固定在 <code>requirements-optional.txt</code> 中，实际运行版本写入溯源记录。核心 reader、通道检索与既有定量流程仍只依赖标准库，MassQL 与双 reader 验证为可选功能。</p>
+<p>测试共 121 项，其中 28 项为强制接口契约（缺少实现时必须失败，而不是跳过）。覆盖范围包括：原有 reader、mzML、EIC、积分、校准与 QC 的回归；真实通道的原生点数与命令行输出；可组合的 Q1/Q3/碰撞能量/极性/时间段/方法段条件；全扫描与 MRM 数据表分离及厂商上下文字段保留；真实 MassQL 引擎与相对强度阈值行为；真实独立 reader 的逐扫描比较与差异分类。真实数据用例通过一份被忽略的本地清单定位，样品路径、身份与观测值都不写入受版本控制的测试。</p>
+<p>所有命令都只读取原始数据，要求写入全新的输出目录，并记录参数、reader 摘要、依赖版本、方法指纹与可选的原始文件哈希。原始数据、结果目录与草稿目录均由 <code>.gitignore</code> 排除。</p>
+<h2 id="7-这一阶段增加了什么"><a href="#7-这一阶段增加了什么" class="headerlink" title="7. 这一阶段增加了什么"></a>7. 这一阶段增加了什么</h2><p>第二阶段没有引入新的定量理论，也没有替代 AMDIS、MZmine、Skyline 或 MRMhub。它补上的是一条此前不完整的链：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">安捷伦 GC-QqQ .d</span><br><span class="line">        ↓</span><br><span class="line">保留采集语义的扫描记录</span><br><span class="line">        ↓</span><br><span class="line">严格通道检索 / MassQL 模式查询</span><br><span class="line">        ↓</span><br><span class="line">原生离子对曲线</span><br><span class="line">        ↓</span><br><span class="line">同批基础定量或标准化导出</span><br></pre></td></tr></table></figure>
+
+<p>其中最难被替代的是第一段：直接读取 <code>.d</code>、分离交替的全扫描与 MRM、确认方法通道身份、区分缺失与实测零值，并在 Linux 上可重复执行。后面的高级校准、LOD/LOQ、漂移与批次校正已有成熟工具，更适合通过通用长表衔接，而不是重新实现。</p>
+<p>因此，当前定位应保持为“Linux 原生的安捷伦 GC-QqQ 数据入口、严格提取、可检索、可审计验证”。只有在取得厂商参考结果并确认峰面积与浓度一致性之后，才值得继续增强基础定量；在证据不足时扩张为完整定量平台，只会把不确定性藏得更深。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>“能算出一个浓度”不是最困难的部分。困难的是知道这个数字来自哪一种扫描、哪一条真实采集的通道、哪一种强度表示、哪一套积分与校准假设，以及另一套独立实现能否复现它。</p>
+<p>第一阶段让 Linux 上的安捷伦 QqQ 数据从“读得出谱”走到“算得出浓度”；第二阶段把结论从“内部自洽”推进到“差异明确、可定位、可继续验证”。这仍不是厂商等价证明，但它是可靠定量该有的起点：先建立证据链，再谈数字。</p>
+
+        </div>
+
+        
+            <div class="article-nav">
+                
+                
+                    <div class="article-next">
+                        <a class="next btn"
+                           rel="next"
+                           href="/What-Prerequisites-Are-Required-for-an-MRM-Concentration-Value-Practical-Guide-to-Agilent-QqQ-Quantification-on-Linux-c835270bb46c/"
+                        >
+                            <span class="post-nav-title-item">What-Prerequisites-Are-Required-for-an-MRM-Concentration-Value_Practical-Guide-to-Agilent-QqQ-Quantification-on-Linux</span>
+                            <span class="post-nav-item">Next posts</span>
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+        
+            <div class="comment-container">
+                <div class="comments-container">
+    <div id="comment-anchor"></div>
+    
+        
+    <div class="valine-container">
+        <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+        <div id="vcomments"></div>
+        <script>
+            new Valine({
+                el: '#vcomments',
+                appId: '9z5bEVzKj46jstwNI8LxhAU6-MdYXbMMI',
+                appKey: 'iEDztTkcDrO0LsO944uIDrC3',
+                meta: ''.split(','),
+                avatar: 'wavatar',
+                enableQQ: true,
+                placeholder: '我看着你，就如你看着我',
+                lang: 'en'.toLowerCase()
+            });
+
+
+            // Valine 评论列表增加"博主"标识
+            const getValineDomTimer = setInterval(() => {
+                const vcards = document.querySelectorAll('#vcomments .vcards .vcard');
+                if (vcards.length > 0) {
+
+                    let author = 'T';
+                    if (author) {
+                        author = author.toLocaleLowerCase();
+                    }
+
+                    let email = 'gsioeo@gmail.com';
+                    if (email) {
+                        email = email.toLocaleLowerCase();
+                    }
+
+                    for (let vcard of vcards) {
+                        const vnick = vcard.querySelector('.vhead .vnick');
+                        if (vnick.innerHTML.toLocaleLowerCase() === author) {
+                            vcard.classList.add('author');
+                        }
+                    }
+                    clearInterval(getValineDomTimer);
+                } else {
+                    clearInterval(getValineDomTimer);
+                }
+            }, 2000);
+        </script>
+    </div>
+
+
+    
+</div>
+
+            </div>
+        
+    </div>
+</div>
+
+
+                    
+                </main>
+
+            </div>
+
+            <div class="page-main-content-bottom">
+                <footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info info-item">
+            &copy; 2026 <i class="fa fa-heart-o"></i> <a href="/">T</a>
+        </div>
+        
+        <div class="theme-info info-item">
+            Powered by <a target="_blank" href="https://hexo.io">Hexo</a> | Theme <a class="theme-version" target="_blank"></a>
+        </div>
+    </div>
+</footer>
+
+            </div>
+        </div>
+    </main>
+
+    <div class="sidebar-tools">
+        <div class="tools-container">
+    <ul class="tools-list">
+        
+
+        
+            <li class="go-comment">
+                <i class="fa fa-comment"></i>
+            </li>
+        
+
+        <!-- TOC aside toggle -->
+        
+
+    </ul>
+</div>
+
+    </div>
+
+    <div class="sidebar-tools-2">
+        <div class="tools2-container">
+
+    <button class="tools-button">
+        <i class="fa fa-plus"></i>
+    </button>
+
+    <ul class="tools-wrapper">
+        <!-- back2top -->
+        
+            <li class="tools-item scroll-to-bottom">
+                <i class="fa fa-arrow-down"></i>
+            </li>
+            <li class="tools-item scroll-to-top">
+                <i class="fa fa-arrow-up"></i>
+            </li>
+        
+
+        <!-- mode toggle -->
+        <li class="tools-item mode-toggle">
+            <i class="fa fa-moon-o"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+
+    </ul>
+</div>
+
+    </div>
+
+
+    <!-- page aside -->
+    <aside class="page-aside">
+        
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%81%E6%8D%AE%E9%93%BE%E8%80%8C%E9%9D%9E%E4%BF%A1%E4%BB%BB%EF%BC%9AMRM-%E5%B7%A5%E5%85%B7%E9%93%BE-v2-%E7%9A%84%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E4%B8%8E%E5%AE%9A%E4%BD%8D"><span class="nav-number">1.</span> <span class="nav-text">证据链而非信任：MRM 工具链 v2 的独立验证与定位</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%85%88%E6%8A%8A%E4%B8%A4%E7%B1%BB%E5%88%86%E6%9E%90%E4%BB%BB%E5%8A%A1%E5%88%86%E5%BC%80"><span class="nav-number">1.2.</span> <span class="nav-text">1. 先把两类分析任务分开</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%88%90%E7%86%9F%E5%B7%A5%E5%85%B7%E5%B7%B2%E7%BB%8F%E8%A6%86%E7%9B%96%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">1.3.</span> <span class="nav-text">2. 成熟工具已经覆盖了什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%AC%AC%E4%B8%80%E9%A1%B9%E6%96%B0%E5%A2%9E%EF%BC%9A%E6%8C%89%E9%87%87%E9%9B%86%E8%AF%AD%E4%B9%89%E6%A3%80%E7%B4%A2%E9%80%9A%E9%81%93"><span class="nav-number">1.4.</span> <span class="nav-text">3. 第一项新增：按采集语义检索通道</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%AC%AC%E4%BA%8C%E9%A1%B9%E6%96%B0%E5%A2%9E%EF%BC%9A%E4%B8%8D%E7%BB%8F-mzML-%E7%9B%B4%E6%8E%A5%E6%89%A7%E8%A1%8C-MassQL"><span class="nav-number">1.5.</span> <span class="nav-text">4. 第二项新增：不经 mzML 直接执行 MassQL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%AC%AC%E4%B8%89%E9%A1%B9%E6%96%B0%E5%A2%9E%EF%BC%9A%E7%94%A8%E7%8B%AC%E7%AB%8B-reader-%E9%80%90%E6%89%AB%E6%8F%8F%E5%AF%B9%E7%85%A7"><span class="nav-number">1.6.</span> <span class="nav-text">5. 第三项新增：用独立 reader 逐扫描对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%AA%8C%E6%94%B6%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E6%80%A7"><span class="nav-number">1.7.</span> <span class="nav-text">6. 验收与可复现性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E8%BF%99%E4%B8%80%E9%98%B6%E6%AE%B5%E5%A2%9E%E5%8A%A0%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">1.8.</span> <span class="nav-text">7. 这一阶段增加了什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">1.9.</span> <span class="nav-text">结语</span></a></li></ol></li></ol>
+    </div>
+</div>
+        
+    </aside>
+
+</div>
+
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/header-shrink.js"></script>
+<script src="/js/dark-light-toggle.js"></script>
+<script src="/js/main.js"></script>
+
+
+
+
+
+    
+<script src="/js/back2top.js"></script>
+
+
+
+
+
+    
+<script src="/js/left-side-toggle.js"></script>
+
+
+    
+        
+<script src="/js/code-copy.js"></script>
+
+    
+
+    
+
+
+</body>
+</html>
