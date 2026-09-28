@@ -1,0 +1,27 @@
+<%- js([
+    'js/utils.js',
+    'js/header-shrink.js',
+    'js/dark-light-toggle.js',
+    'js/main.js'
+]) %>
+
+<% if (theme.local_search.enable && config.search) { %>
+    <%- js('js/local-search.js') %>
+<% } %>
+
+<% if (theme.back2top.enable) { %>
+    <%- js('js/back2top.js') %>
+<% } %>
+
+<% if (is_post()) { %>
+
+    <%- js('js/left-side-toggle.js') %>
+
+    <% if (theme.code_copy.enable ) { %>
+        <%- js('js/code-copy.js') %>
+    <% } %>
+
+    <% if (theme.toc.enable) { %>
+        <%- js(['js/libs/anime.min.js', 'js/toc.js']) %>
+    <% } %>
+<% } %>

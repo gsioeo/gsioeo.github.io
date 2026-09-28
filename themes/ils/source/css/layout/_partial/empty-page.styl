@@ -1,0 +1,34 @@
+@require "../common/magic-theme.styl";
+@require "../common/variables.styl";
+
+.empty-page-container {
+
+  background: var(--background-color);
+
+  magic-container(1.005, 1.01, 30px);
+
+  +ils-tablet() {
+    magic-container(1.001, 1.005, 20px);
+  }
+
+  .empty-page-content {
+
+    h1, h2, h3, h4, h5, h6 {
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+    }
+
+    margin-bottom: $component-interspace;
+
+    +ils-tablet() {
+      margin-bottom: $component-interspace-tablet;
+    }
+
+    +ils-mobile() {
+      margin-bottom: $component-interspace-mobile;
+    }
+  }
+}
