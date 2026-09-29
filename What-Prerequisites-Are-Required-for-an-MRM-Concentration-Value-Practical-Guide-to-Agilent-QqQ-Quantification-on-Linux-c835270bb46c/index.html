@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    
+    <title>
+        What-Prerequisites-Are-Required-for-an-MRM-Concentration-Value_Practical-Guide-to-Agilent-QqQ-Quantification-on-Linux |
+        
+        XZB
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <link rel="shortcut icon" href="/images/favicon.png">
+    
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script id="hexo-configurations">
+    let ILS = window.ILS || {};
+    let CONFIG = {"hostname":"xzbloggers.cn","root":"/","localsearch":{"enable":false,"trigger":"auto","unescape":false,"preload":false},"toc":{"enable":false,"number":true,"expand_all":true},"back2top":{"enable":true}};
+  </script>
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body>
+<div class="page-container">
+
+    <header class="page-header">
+        <div class="header-progress"></div>
+    </header>
+
+    <main class="page-main">
+
+        <div class="page-main-content">
+
+            <div class="page-main-content-top">
+                <header class="header-wrapper">
+
+    <div class="header-content">
+
+        <a class="logo-title" href="/">
+            XZB
+        </a>
+
+        <ul class="menu-list">
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/"
+                    >
+                        HOME
+                    </a>
+                </li>
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/archives"
+                    >
+                        ARCHIVES
+                    </a>
+                </li>
+            
+                <li class="menu-item">
+                    <a class=""
+                       href="/links"
+                    >
+                        LINKS
+                    </a>
+                </li>
+            
+        </ul>
+
+        <div class="menu-bar">
+            <div class="menu-bar-middle"></div>
+        </div>
+    </div>
+
+    <div class="header-drawer">
+        <ul class="drawer-menu-list">
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/">HOME</a>
+                </li>
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/archives">ARCHIVES</a>
+                </li>
+            
+                <li class="drawer-menu-item">
+                    <a class=""
+                       href="/links">LINKS</a>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+            </div>
+
+            <div class="page-main-content-middle">
+
+                <main class="main-content normal-code-theme">
+
+                    
+                        <div class="fade-in-down-animation">
+    <div class="article-content-container">
+
+        <div class="article-title">
+            <span class="title-hover-animation">What-Prerequisites-Are-Required-for-an-MRM-Concentration-Value_Practical-Guide-to-Agilent-QqQ-Quantification-on-Linux</span>
+        </div>
+
+        
+            <div class="article-header">
+                <div class="avatar">
+                    <img src="/images/avatar.png">
+                </div>
+                <div class="info">
+                    <div class="author">
+                        <span>T</span>
+                        <span class="level">Lv1</span>
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa fa-calendar-o"></i> 2026-09-17 07:33:56
+    </span>
+    
+    
+    
+    
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        <div class="article-content markdown-body">
+            <h1 id="一个-MRM-浓度值需要哪些前提：Linux-上的安捷伦-QqQ-定量实践"><a href="#一个-MRM-浓度值需要哪些前提：Linux-上的安捷伦-QqQ-定量实践" class="headerlink" title="一个 MRM 浓度值需要哪些前提：Linux 上的安捷伦 QqQ 定量实践"></a>一个 MRM 浓度值需要哪些前提：Linux 上的安捷伦 QqQ 定量实践</h1><h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p><a href="https://xzbloggers.cn/reverse-engineering-Agilent-Mass-Spectrometr-d-Files-spectrum-analysis-without-MassHunter-088508d479c0/">上一篇</a>解决了数据入口问题：不依赖 MassHunter，直接解析安捷伦 <code>.d</code> 中的 <code>MSScan.bin</code> 与 <code>MSPeak.bin</code>，并以 TIC ≡ Σ intensity 做零残差自检。本文转向分析化学问题：一个报出去的浓度值，需要满足哪些前提才站得住。</p>
+<p>在一批真实的 GC-QqQ MRM 数据（1 个空白、10 个标准水平、8 针待测样，共 19 次进样）中，有三处尤其容易出错，而错误结果往往仍“看起来正常”：把交替采集的全扫描帧混入离子对通道，把方法声明的子离子顺序当成二进制存储顺序，以及在约 500 倍的浓度范围内误选加权方式。三者都会给出量级合理的错误数值，既不报错，也不会在色谱图上显形。</p>
+<p>同一批数据的回算偏差还把问题指回了实验端：按 ±20% 回算判据，10 个标准水平中只有 4 个合格；两组相邻的两倍稀释点，响应比仅为 1.03 和 1.10。这不是积分或拟合的缺陷，而是标准系列需要复核的证据。</p>
+<p>代码开源于 <a target="_blank" rel="noopener" href="https://github.com/gsioeo/agilent-d-toolkit">agilent-d-toolkit</a> 的 <code>mrm_quant/</code>，含 121 项测试，其中 28 项是先于实现写定的接口契约。本文所有数值均由同一套代码在本地实际运行并复核；样品身份与标准配制明细不在本文列出。</p>
+<hr>
+<h2 id="1-一个浓度值需要哪些前提"><a href="#1-一个浓度值需要哪些前提" class="headerlink" title="1. 一个浓度值需要哪些前提"></a>1. 一个浓度值需要哪些前提</h2><p>MRM 定量在方法建立时就把问题收窄了：目标物由预设的离子对代表，浓度由同批工作曲线换算。因此，报出一个浓度，至少要能回答四个问题。</p>
+<p>第一，这条离子对是否真的被采集过。方法文件里写了三条通道，不代表某一针数据中三条都在；若软件在通道缺失时退回“同一标称质量的全扫描提取离子流”，得到的数字便与该离子对无关。第二，积分的峰是否就是目标物。保留时间窗、伴峰与共洗脱都可能使“最高峰”并非“目标峰”。第三，工作曲线是否覆盖样品浓度，并且在该区间内能够通过回算。第四，条件不满足时，软件是否给出状态而不是浓度值。</p>
+<p>下面按这四点，用实测结果说明本批数据暴露的具体风险。</p>
+<h2 id="2-采集语义：MRM-与全扫描交替采集"><a href="#2-采集语义：MRM-与全扫描交替采集" class="headerlink" title="2. 采集语义：MRM 与全扫描交替采集"></a>2. 采集语义：MRM 与全扫描交替采集</h2><p>这台 QqQ 在 MRM 采集中同时保留了全扫描：每个循环先采一帧 MRM，再采一帧全扫描。其中一针标准品共 4908 帧，两种模式各 2454 帧，严格交替并共享同一 cycle 编号。</p>
+<table>
+<thead>
+<tr>
+<th>帧类型</th>
+<th align="right">ScanType</th>
+<th align="right">MSLevel</th>
+<th align="right">ScanMethodID</th>
+<th align="right">母离子</th>
+<th align="right">每帧质心点数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MRM</td>
+<td align="right">256</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">有</td>
+<td align="right">3</td>
+</tr>
+<tr>
+<td>全扫描</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">无</td>
+<td align="right">数百</td>
+</tr>
+</tbody></table>
+<p>原有的全扫描管线以 <code>±0.3 u</code> 窗口提取子离子质量时，在这份数据上返回全部 4908 个点，且在 <code>MSLevel = 1</code> 的帧上存在非零值。它把两种物理量拼成一条曲线：一半来自目标离子对，一半来自全扫描中所有落入该窗口的共存离子。</p>
+<p>这种混入对定量的影响具有明确方向。全扫描窗口不具备 Q1 选择性，基质贡献相对固定，在高浓度端占比可忽略，在低浓度端却与目标信号处于同一量级，于是曲线低端被抬平、斜率被压低、截距被抬高——最需要准确性的区间反而受到系统性污染。真正的离子对通道只有 2454 个原生采样点，不多不少，也不补零。</p>
+<h2 id="3-通道身份：方法声明顺序不等于二进制存储顺序"><a href="#3-通道身份：方法声明顺序不等于二进制存储顺序" class="headerlink" title="3. 通道身份：方法声明顺序不等于二进制存储顺序"></a>3. 通道身份：方法声明顺序不等于二进制存储顺序</h2><p>MRM 帧的质心点数等于该方法段声明的离子对数量。本方法段按方法元素顺序声明三条通道，而二进制峰数组按 m/z 升序存储，两者顺序正好相反。若按数组位置把强度分配给通道，三条通道会整体错位。</p>
+<p>实测同一帧内三个子离子的强度相差约四个数量级，最弱的一条在小数量级，最强的一条在千量级。错位之所以危险，正在于三个值都是量级合理的正数：定量离子对拿到了定性离子对的响应，定性离子对拿到了另一条通道的响应，离子比检查一并失效，而结果表上没有任何异常特征。</p>
+<p>稳妥的做法是先按帧筛选（ScanType、MS level、母离子、碰撞能量、极性、时间段、方法段），再按实际 m/z 值在容差内匹配子离子。这里的质量容差用于“识别已采集通道”，与仪器隔离窗无关，也不应沿用全扫描 EIC 常用的 ±0.3 u；若容差宽到能同时覆盖两条离散通道，程序应报错而不是合并。方法未采集的离子对同样按错误处理，不允许退回同标称质量的全扫描 EIC。</p>
+<p>一帧内某个已声明子离子缺失时记为缺失并标注，仪器测得的零保持为零。二者在低浓度端含义完全不同：前者是数据缺口，后者是有效观测值。</p>
+<h2 id="4-峰归属：保留时间漂移与伴峰"><a href="#4-峰归属：保留时间漂移与伴峰" class="headerlink" title="4. 峰归属：保留时间漂移与伴峰"></a>4. 峰归属：保留时间漂移与伴峰</h2><p>积分本身很朴素：在采样点上做梯形积分，时间以分钟计；窗口端点不落在采样点上时采用线性插值，不向数据范围之外外推。基线可设为无基线或窗口两端连线，扣除基线后的残差保留正负号。逐点截零会使每次噪声起伏都贡献正面积，从而在低浓度端造成正偏。</p>
+<p>需要规则约束的是峰归属。本批数据中，目标峰顶随浓度在约 0.09 min 的范围内漂移，主峰右侧约 0.05 min 处还有一个峰高为主峰 3%–6% 的伴峰。把保留时间容差放宽到 ±0.15 min 时，十个标准水平中有七个在窗口内出现两个候选峰。</p>
+<p>处理方式是：只在预期保留时间容差内选峰；窗口内无峰记为 <code>no_peak</code>，多峰记为 <code>ambiguous_peak</code> 并交由人工复核，不按“全程最高峰”或“面积最大”自动决定。将伴峰并入主峰所需的峰分辨参数（最小相对峰高 0.05、最小峰间距 0.10 min）写入配置并随结果归档，而不是藏在代码默认值中——这两个参数直接决定最终报告哪个面积。</p>
+<h2 id="5-校准模型：加权方式改变结论"><a href="#5-校准模型：加权方式改变结论" class="headerlink" title="5. 校准模型：加权方式改变结论"></a>5. 校准模型：加权方式改变结论</h2><p>标准系列为 10 级两倍逐级稀释，跨度约 500 倍；进样顺序依次为空白、由低到高的标准和样品，这一顺序本身有利于抑制携带污染。定量通道面积随浓度单调下降。</p>
+<p>曲线为 <code>A = a·C_vial + b</code>，采用加权最小二乘，权重与截距模式由方法预先指定。在跨度约 500 倍的范围内，不同选择造成的差异远不止小数位：</p>
+<table>
+<thead>
+<tr>
+<th>权重</th>
+<th align="right">r²（非加权）</th>
+<th align="right">r²（加权）</th>
+<th>截距相对水平</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>none</td>
+<td align="right">0.981918</td>
+<td align="right">0.981918</td>
+<td>最高，约为 1/x 拟合截距的 6.6 倍</td>
+</tr>
+<tr>
+<td>1/x</td>
+<td align="right">0.946973</td>
+<td align="right">0.911935</td>
+<td>中等</td>
+</tr>
+<tr>
+<td>1/x²</td>
+<td align="right">0.090549</td>
+<td align="right">0.818623</td>
+<td>最低，接近零</td>
+</tr>
+</tbody></table>
+<p>非加权拟合的 r² 最高，但其截距高于两针样品的实测峰面积（相当于这两针面积的 1.15 与 1.35 倍），于是这两针回算为负浓度。色谱图上它们都有清晰的目标峰，负值只能来自模型：非加权最小二乘让高浓度点主导拟合，截距被抬到低端信号之上。改用 1/x 权重后截距下降约 6.6 倍，四针样品全部落入校准范围，状态为 <code>ok</code>。</p>
+<p>这也说明不能按 r² 自动选择模型：<code>1/x²</code> 的非加权 r² 只有 0.09，若据此判为“拟合失败”便是误读——它的加权 r² 为 0.82，低端回算偏差反而最小。工具同时报告两种 r² 并写明定义：不同权重下的 r² 不可直接比较，也不能作为选模依据；模型应由方法预先规定，回算偏差才是判据。作为冗余校验，非加权自由截距拟合的 r² 与 <code>numpy.polyfit</code> 及皮尔逊 r² 在真实数据上逐位一致。</p>
+<h2 id="6-曲线还告诉了我们标准系列的问题"><a href="#6-曲线还告诉了我们标准系列的问题" class="headerlink" title="6. 曲线还告诉了我们标准系列的问题"></a>6. 曲线还告诉了我们标准系列的问题</h2><p>按配置模型逐点回算后，若采用常见的 ±20%（最低点 ±25%）判据，十个标准水平中只有四个合格。这条曲线不适用于其配制的全量程，而工具把每一点的偏差、残差与状态都摆了出来，没有替使用者剔除任何点。</p>
+<p>三个统计特征把问题指向实验端，而不是数据处理过程。</p>
+<p>其一，两组相邻水平的配制浓度均相差两倍，但面积比只有 1.03 和 1.10，即两次两倍稀释的响应几乎无法区分。其二，响应因子（面积/浓度）在系列内波动约 3.5 倍，两个孤立高点之后的相邻水平又回到整体趋势；若是串联稀释中某一级配错，误差会向后逐级传递，不会只影响单点后立即恢复。因此，更可能是这两个标准瓶在单独配制或转移时出错，或相应的两针进样异常。其三，在最高浓度的 4 个水平中，响应因子单调上升约 55%，说明量程上端响应低于比例关系，这是检测器饱和或柱容量超载的典型表现。</p>
+<p>结论是工作范围的上下限都需要在复核标准后重新划定，而不是沿用配制范围；两个可疑水平应复核后重配，而不是靠更换加权方式掩盖。</p>
+<h2 id="7-何时不给数字"><a href="#7-何时不给数字" class="headerlink" title="7. 何时不给数字"></a>7. 何时不给数字</h2><p>回算 <code>C_vial = (A − b)/a</code>，再乘以稀释倍数得到原液浓度；若标准浓度已经折算为瓶中浓度，则不再重复相乘。工具的其余逻辑几乎都在回答另一个问题：什么时候不该给出数字。</p>
+<p>状态包括 <code>no_peak</code>、<code>ambiguous_peak</code>、<code>insufficient_points</code>、<code>non_positive_area</code>、<code>negative_backcalc</code>、<code>below_calibration_range</code>、<code>above_calibration_range</code>、<code>below_validated_loq</code>、<code>calibration_failed</code>、<code>quantification_failed</code>、<code>internal_standard_failed</code>、<code>ion_ratio_fail</code>、<code>rt_mismatch</code>、<code>blank_contamination</code>、<code>qc_fail</code>。在这些情况下，面积、峰顶与瓶中浓度回算值等诊断量全部保留，但报告浓度留空，不外推、不截零，也不一律写作 ND。“未检出”“该通道未采集”“低于校准范围”“低于已验证定量下限”是四类不同结论，合并为 ND 就会丢失这些区别。</p>
+<p>本批 19 行结果的分布为：12 行 <code>ok</code>、4 行 <code>ambiguous_peak</code>、2 行 <code>negative_backcalc</code>、1 行 <code>below_calibration_range</code>。目标窗口内未能选出唯一可用峰的 4 针进样，没有被强行赋予数值。</p>
+<p>有效性也不能默认通过：只有配置了空白限值与独立 QC 且二者都通过，<code>validated</code> 才为真；未配置就是未验证。本批两项均未配置，因此 19 行全部为 <code>validated = False</code>——这比在缺少验证证据时默认“通过”更接近实验室的真实状态。</p>
+<p>工作曲线绑定批次与方法指纹。指纹由解析后的采集方法计算，涵盖通道表、Q1/Q3、碰撞能量、极性、dwell、gain、分辨率、时间段与源参数。因此，一个批次的曲线不能用于计算另一个批次的样品；出现 <code>batch_mismatch</code> 或 <code>method_mismatch</code> 时，程序会直接拒绝计算。方法文件名相同不等于方法一致，所以指纹不取文件名。</p>
+<h2 id="8-换一批数据：诚实的失败"><a href="#8-换一批数据：诚实的失败" class="headerlink" title="8. 换一批数据：诚实的失败"></a>8. 换一批数据：诚实的失败</h2><p>另一个时期的批次采用了不同的离子表。同一套代码只需更换配置即可完成提取与积分，8 针都在预期窗口内选到唯一峰；但这一批没有任何标准，定量命令以“可用校准点为 0”失败，写出失败记录并返回非零退出码。同批曲线定量的前提是该批次包含标准，工具不应使用其他批次的曲线凑出一个数字。</p>
+<p>这次失败还暴露了另一个问题：该批沿用了前一批的保留时间窗，而其最强信号实际落在窗外约 0.9 min 处。没有标准锚定保留时间，就不能确认窗口内的峰是目标物；这一限制写在配置文件的备注字段里，而不是留给读结果的人猜。</p>
+<h2 id="9-与方法验证之间还差什么"><a href="#9-与方法验证之间还差什么" class="headerlink" title="9. 与方法验证之间还差什么"></a>9. 与方法验证之间还差什么</h2><p>工具目前的定位很明确：它保证从原始二进制到浓度的每一步都可追溯、可复算，并在条件不足时拒绝报数；它没有、也不能替代方法验证。</p>
+<p>尚未完成的验证要素包括：在相同 Q1/Q3、碰撞能量与积分设置下，与 MassHunter 对照通道、时间轴、峰面积和浓度；实测确定 LOD 与 LOQ（校准范围下限不等于已验证 LOQ）；评估重复性与中间精密度；评估加标回收与基质效应；建立定性离子比参考值。本批三条通道是否属于同一物质尚未确认，因此定性通道只提取，不做离子比判定。强度单位仍标为仪器存储值 <code>stored_intensity</code>，未按 dwell 换算为 counts 或 counts/s，面积单位相应为 <code>stored_intensity*min</code>。因此，面积只在批内可比，不能视为绝对量。</p>
+<p>在这些工作完成前，本批样品结果的正确用法是作为待复核的估计值：先复核两个可疑标准水平与量程上端的线性，再重新划定工作范围。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>把浓度算出来是最容易的一步。难的是能说清这个数字来自哪一种扫描、哪一条真实采集的通道、哪一个峰、哪一种加权与截距假设，以及在什么条件下它应当被拒绝。工具能做的是让这些前提显式、可配置、可追溯；剩下的判断仍然属于分析者。</p>
+
+        </div>
+
+        
+            <div class="article-nav">
+                
+                    <div class="article-prev">
+                        <a class="prev btn"
+                           rel="prev"
+                           href="/Independent-Verification-and-Localization-of-the-MRM-Toolchain-v2-36360259588e/"
+                        >
+                            <i class="fa fa-chevron-left"></i>
+                            <span class="post-nav-title-item">Independent-Verification-and-Localization-of-the-MRM-Toolchain-v2</span>
+                            <span class="post-nav-item">Prev posts</span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next">
+                        <a class="next btn"
+                           rel="next"
+                           href="/gnu-pdf-trans-pipe-be61e657533c/"
+                        >
+                            <span class="post-nav-title-item">gnu-pdf-trans-pipe</span>
+                            <span class="post-nav-item">Next posts</span>
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+        
+            <div class="comment-container">
+                <div class="comments-container">
+    <div id="comment-anchor"></div>
+    
+        
+    <div class="valine-container">
+        <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+        <div id="vcomments"></div>
+        <script>
+            new Valine({
+                el: '#vcomments',
+                appId: '9z5bEVzKj46jstwNI8LxhAU6-MdYXbMMI',
+                appKey: 'iEDztTkcDrO0LsO944uIDrC3',
+                meta: ''.split(','),
+                avatar: 'wavatar',
+                enableQQ: true,
+                placeholder: '我看着你，就如你看着我',
+                lang: 'en'.toLowerCase()
+            });
+
+
+            // Valine 评论列表增加"博主"标识
+            const getValineDomTimer = setInterval(() => {
+                const vcards = document.querySelectorAll('#vcomments .vcards .vcard');
+                if (vcards.length > 0) {
+
+                    let author = 'T';
+                    if (author) {
+                        author = author.toLocaleLowerCase();
+                    }
+
+                    let email = 'gsioeo@gmail.com';
+                    if (email) {
+                        email = email.toLocaleLowerCase();
+                    }
+
+                    for (let vcard of vcards) {
+                        const vnick = vcard.querySelector('.vhead .vnick');
+                        if (vnick.innerHTML.toLocaleLowerCase() === author) {
+                            vcard.classList.add('author');
+                        }
+                    }
+                    clearInterval(getValineDomTimer);
+                } else {
+                    clearInterval(getValineDomTimer);
+                }
+            }, 2000);
+        </script>
+    </div>
+
+
+    
+</div>
+
+            </div>
+        
+    </div>
+</div>
+
+
+                    
+                </main>
+
+            </div>
+
+            <div class="page-main-content-bottom">
+                <footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info info-item">
+            &copy; 2026 <i class="fa fa-heart-o"></i> <a href="/">T</a>
+        </div>
+        
+        <div class="theme-info info-item">
+            Powered by <a target="_blank" href="https://hexo.io">Hexo</a> | Theme <a class="theme-version" target="_blank"></a>
+        </div>
+    </div>
+</footer>
+
+            </div>
+        </div>
+    </main>
+
+    <div class="sidebar-tools">
+        <div class="tools-container">
+    <ul class="tools-list">
+        
+
+        
+            <li class="go-comment">
+                <i class="fa fa-comment"></i>
+            </li>
+        
+
+        <!-- TOC aside toggle -->
+        
+
+    </ul>
+</div>
+
+    </div>
+
+    <div class="sidebar-tools-2">
+        <div class="tools2-container">
+
+    <button class="tools-button">
+        <i class="fa fa-plus"></i>
+    </button>
+
+    <ul class="tools-wrapper">
+        <!-- back2top -->
+        
+            <li class="tools-item scroll-to-bottom">
+                <i class="fa fa-arrow-down"></i>
+            </li>
+            <li class="tools-item scroll-to-top">
+                <i class="fa fa-arrow-up"></i>
+            </li>
+        
+
+        <!-- mode toggle -->
+        <li class="tools-item mode-toggle">
+            <i class="fa fa-moon-o"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+
+    </ul>
+</div>
+
+    </div>
+
+
+    <!-- page aside -->
+    <aside class="page-aside">
+        
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA-MRM-%E6%B5%93%E5%BA%A6%E5%80%BC%E9%9C%80%E8%A6%81%E5%93%AA%E4%BA%9B%E5%89%8D%E6%8F%90%EF%BC%9ALinux-%E4%B8%8A%E7%9A%84%E5%AE%89%E6%8D%B7%E4%BC%A6-QqQ-%E5%AE%9A%E9%87%8F%E5%AE%9E%E8%B7%B5"><span class="nav-number">1.</span> <span class="nav-text">一个 MRM 浓度值需要哪些前提：Linux 上的安捷伦 QqQ 定量实践</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%80%E4%B8%AA%E6%B5%93%E5%BA%A6%E5%80%BC%E9%9C%80%E8%A6%81%E5%93%AA%E4%BA%9B%E5%89%8D%E6%8F%90"><span class="nav-number">1.2.</span> <span class="nav-text">1. 一个浓度值需要哪些前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%87%87%E9%9B%86%E8%AF%AD%E4%B9%89%EF%BC%9AMRM-%E4%B8%8E%E5%85%A8%E6%89%AB%E6%8F%8F%E4%BA%A4%E6%9B%BF%E9%87%87%E9%9B%86"><span class="nav-number">1.3.</span> <span class="nav-text">2. 采集语义：MRM 与全扫描交替采集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%80%9A%E9%81%93%E8%BA%AB%E4%BB%BD%EF%BC%9A%E6%96%B9%E6%B3%95%E5%A3%B0%E6%98%8E%E9%A1%BA%E5%BA%8F%E4%B8%8D%E7%AD%89%E4%BA%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AD%98%E5%82%A8%E9%A1%BA%E5%BA%8F"><span class="nav-number">1.4.</span> <span class="nav-text">3. 通道身份：方法声明顺序不等于二进制存储顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%B3%B0%E5%BD%92%E5%B1%9E%EF%BC%9A%E4%BF%9D%E7%95%99%E6%97%B6%E9%97%B4%E6%BC%82%E7%A7%BB%E4%B8%8E%E4%BC%B4%E5%B3%B0"><span class="nav-number">1.5.</span> <span class="nav-text">4. 峰归属：保留时间漂移与伴峰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%A0%A1%E5%87%86%E6%A8%A1%E5%9E%8B%EF%BC%9A%E5%8A%A0%E6%9D%83%E6%96%B9%E5%BC%8F%E6%94%B9%E5%8F%98%E7%BB%93%E8%AE%BA"><span class="nav-number">1.6.</span> <span class="nav-text">5. 校准模型：加权方式改变结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E6%9B%B2%E7%BA%BF%E8%BF%98%E5%91%8A%E8%AF%89%E4%BA%86%E6%88%91%E4%BB%AC%E6%A0%87%E5%87%86%E7%B3%BB%E5%88%97%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.7.</span> <span class="nav-text">6. 曲线还告诉了我们标准系列的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%BD%95%E6%97%B6%E4%B8%8D%E7%BB%99%E6%95%B0%E5%AD%97"><span class="nav-number">1.8.</span> <span class="nav-text">7. 何时不给数字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E6%8D%A2%E4%B8%80%E6%89%B9%E6%95%B0%E6%8D%AE%EF%BC%9A%E8%AF%9A%E5%AE%9E%E7%9A%84%E5%A4%B1%E8%B4%A5"><span class="nav-number">1.9.</span> <span class="nav-text">8. 换一批数据：诚实的失败</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E4%B8%8E%E6%96%B9%E6%B3%95%E9%AA%8C%E8%AF%81%E4%B9%8B%E9%97%B4%E8%BF%98%E5%B7%AE%E4%BB%80%E4%B9%88"><span class="nav-number">1.10.</span> <span class="nav-text">9. 与方法验证之间还差什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">1.11.</span> <span class="nav-text">结语</span></a></li></ol></li></ol>
+    </div>
+</div>
+        
+    </aside>
+
+</div>
+
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/header-shrink.js"></script>
+<script src="/js/dark-light-toggle.js"></script>
+<script src="/js/main.js"></script>
+
+
+
+
+
+    
+<script src="/js/back2top.js"></script>
+
+
+
+
+
+    
+<script src="/js/left-side-toggle.js"></script>
+
+
+    
+        
+<script src="/js/code-copy.js"></script>
+
+    
+
+    
+
+
+</body>
+</html>
